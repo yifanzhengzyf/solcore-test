@@ -10,7 +10,9 @@ from configparser import ConfigParser
 from solcore.science_tracker import science_reference
 from solcore import config, SOLCORE_ROOT
 
-SOPRA_PATH = os.path.abspath(config['Others']['sopra'].replace('SOLCORE_ROOT', SOLCORE_ROOT))
+SOPRA_PATH = os.path.abspath(
+    config["Others"]["sopra"].replace("SOLCORE_ROOT", SOLCORE_ROOT)
+)
 compounds_path = os.path.join(SOPRA_PATH, "compounds.txt")
 compounds_info = ConfigParser()
 compounds_info.read(compounds_path)
@@ -26,15 +28,21 @@ class sopra_database:
     Once imported a number of useful methods can be called to return n, k and alpha data for the desired material.
     """
 
-    science_reference("All optical constant data made avaialble by SOPRA-SA",
-                      "http://www.sspectra.com/sopra.html")
+    science_reference(
+        "All optical constant data made avaialble by SOPRA-SA",
+        "http://www.sspectra.com/sopra.html",
+    )
 
     def __init__(self, Material):
         # Define filepath to the SOPRA database for file import...
         self.__SOPRA_PATH = SOPRA_PATH
 
         # Load in SOPRA_DB.csv database file
-        DB = np.genfromtxt(os.path.join(self.__SOPRA_PATH, "SOPRA_DB_Updated.csv"), delimiter=",", dtype=str)
+        DB = np.genfromtxt(
+            os.path.join(self.__SOPRA_PATH, "SOPRA_DB_Updated.csv"),
+            delimiter=",",
+            dtype=str,
+        )
 
         self.__fname = None
         for fname, symbol, range, info in DB:
@@ -45,15 +53,19 @@ class sopra_database:
                 self.path = os.path.join(self.__SOPRA_PATH, self.__fname + ".MAT")
 
                 # self.info contains all detail loaded from SOPRA_DB,csv file...
-                self.info = {"Material": symbol,
-                             "Wavelength (nm)": range,
-                             "File Info": info,
-                             "File Path": self.path}
+                self.info = {
+                    "Material": symbol,
+                    "Wavelength (nm)": range,
+                    "File Info": info,
+                    "File Path": self.path,
+                }
 
         # If the material name is incorrect then the material attribute is not written to
         if self.__fname is None:
 
-            print("SOPRA_DB :: ERROR :: Material not found in SOPRA_DB... Check materials list...")
+            print(
+                "SOPRA_DB :: ERROR :: Material not found in SOPRA_DB... Check materials list..."
+            )
             print("Similar Matches ::")
             for fname, symbol, range, info in DB:
 
@@ -62,7 +74,9 @@ class sopra_database:
 
             # If the exception is caught, exit the program as nothing else useful can be done...
             # sys.exit()
-            raise SOPRAError("Material not found in SOPRA database: {}".format(Material))
+            raise SOPRAError(
+                "Material not found in SOPRA database: {}".format(Material)
+            )
 
     @staticmethod
     def material_list():
@@ -71,7 +85,7 @@ class sopra_database:
         print("Opening List of Available Materials in the SOPRA database")
 
         # Need different treatment depending on computer OS.
-        if sys.platform == 'darwin':
+        if sys.platform == "darwin":
             # Find spaces in the filename and add a \ before (for unix based systems)
             directory = SOPRA_PATH.split(" ")
 
@@ -81,7 +95,7 @@ class sopra_database:
 
             os.system("open " + os.path.join(new_path, "List_Of_Files_Updated_PDF.pdf"))
 
-        elif sys.platform == 'linux':
+        elif sys.platform == "linux":
             # Find spaces in the filename and add a \ before (for unix based systems)
             directory = SOPRA_PATH.split(" ")
 
@@ -89,12 +103,16 @@ class sopra_database:
             for i in range(1, len(directory), 1):
                 new_path = new_path + "\ " + directory[i]
 
-            os.system("xdg-open " + os.path.join(new_path, "List_Of_Files_Updated_PDF.pdf"))
+            os.system(
+                "xdg-open " + os.path.join(new_path, "List_Of_Files_Updated_PDF.pdf")
+            )
 
-        elif sys.platform == 'win32':
+        elif sys.platform == "win32":
             # Find spaces in the filename and add a \ before (for unix based systems)
 
-            os.system("start " + os.path.join(SOPRA_PATH, "List_Of_Files_Updated_PDF.pdf"))
+            os.system(
+                "start " + os.path.join(SOPRA_PATH, "List_Of_Files_Updated_PDF.pdf")
+            )
 
     def load_n(self, Lambda=None):
         """ SOPRA_DB.load_n(Lambda) :: Load refractive index (n) data of the requested material.
@@ -106,12 +124,25 @@ class sopra_database:
         try:
             os.stat(self.path)
         except FileNotFoundError:
-            print('load_n :: WARNING :: There is no individual data file for, ' + self.material + ".")
-            print('This material may be part of a set of varying composition, check the materials list...')
+            print(
+                "load_n :: WARNING :: There is no individual data file for, "
+                + self.material
+                + "."
+            )
+            print(
+                "This material may be part of a set of varying composition, check the materials list..."
+            )
             sys.exit()
 
         # Load in data from file...
-        Wav, n = np.genfromtxt(self.path, delimiter="*", skip_header=3, skip_footer=3, usecols=(2, 3), unpack=True)
+        Wav, n = np.genfromtxt(
+            self.path,
+            delimiter="*",
+            skip_header=3,
+            skip_footer=3,
+            usecols=(2, 3),
+            unpack=True,
+        )
 
         if Lambda is not None:
             # Interpolate in range specified by Lambda...
@@ -132,12 +163,25 @@ class sopra_database:
         try:
             os.stat(self.path)
         except FileNotFoundError:
-            print('load_k :: WARNING :: There is no individual data file for, ' + self.material + ".")
-            print('This material may be part of a set of varying composition, check the materials list...')
+            print(
+                "load_k :: WARNING :: There is no individual data file for, "
+                + self.material
+                + "."
+            )
+            print(
+                "This material may be part of a set of varying composition, check the materials list..."
+            )
             sys.exit()
 
         # Load in data from file...
-        Wav, k = np.genfromtxt(self.path, delimiter="*", skip_header=3, skip_footer=3, usecols=(2, 4), unpack=True)
+        Wav, k = np.genfromtxt(
+            self.path,
+            delimiter="*",
+            skip_header=3,
+            skip_footer=3,
+            usecols=(2, 4),
+            unpack=True,
+        )
 
         if Lambda is not None:
             # Interpolate in range specified by Lambda...
@@ -156,7 +200,7 @@ class sopra_database:
 
         Wav, k = self.load_k(Lambda=Lambda)
 
-        return (Wav, ((4 * np.pi) / (Wav * 1E-9)) * k)
+        return (Wav, ((4 * np.pi) / (Wav * 1e-9)) * k)
 
     def load_temperature(self, Lambda, T=300):
         """ SOPRA_DB.load_temperature(T, Lambda) :: Loads n and k data for a set of materials with temperature dependent
@@ -177,7 +221,9 @@ class sopra_database:
             os.stat(path)
 
         except FileNotFoundError:
-            print("load_temperature :: WARNING :: Material folder does not exists... Check materials list...")
+            print(
+                "load_temperature :: WARNING :: Material folder does not exists... Check materials list..."
+            )
             # If material folder is not found exit program as nothing more useful can be done...
             sys.exit()
 
@@ -197,8 +243,14 @@ class sopra_database:
                 Num.append("0")
                 TEMP.append(float(Num[0]))
 
-                Wav, n, k = np.genfromtxt(os.path.join(path, files), delimiter="*",
-                                          skip_header=3, skip_footer=3, usecols=(2, 3, 4), unpack=True)
+                Wav, n, k = np.genfromtxt(
+                    os.path.join(path, files),
+                    delimiter="*",
+                    skip_header=3,
+                    skip_footer=3,
+                    usecols=(2, 3, 4),
+                    unpack=True,
+                )
 
                 if Lambda is not None:
                     # Interpolate if the Lambda argument is specified, if not pass loaded Wav, n and k...
@@ -212,14 +264,24 @@ class sopra_database:
 
         # Check and see if the entered temperature is within the range of data...
         if T_degC <= min(TEMP):
-            print("load_temperature :: WARNING :: Desired Temperature < than the minimum (%6.1f K)" % (
-                min(TEMP) + 273.15))
-            print("Returned interpolated data will be that at Tmin = %6.1f K" % (min(TEMP) + 273.15))
+            print(
+                "load_temperature :: WARNING :: Desired Temperature < than the minimum (%6.1f K)"
+                % (min(TEMP) + 273.15)
+            )
+            print(
+                "Returned interpolated data will be that at Tmin = %6.1f K"
+                % (min(TEMP) + 273.15)
+            )
 
         elif T_degC >= max(TEMP):
-            print("load_temperature :: WARNING :: Desired Temperature > than the maximum (%6.1f K)" % (
-                max(TEMP) + 273.15))
-            print("Returned interpolated data will be that at Tmax = %6.1f K" % (max(TEMP) + 273.15))
+            print(
+                "load_temperature :: WARNING :: Desired Temperature > than the maximum (%6.1f K)"
+                % (max(TEMP) + 273.15)
+            )
+            print(
+                "Returned interpolated data will be that at Tmax = %6.1f K"
+                % (max(TEMP) + 273.15)
+            )
 
         # use linear interpolation to interpolate the data at the desired temperature...
         n_interp_data = []
@@ -259,13 +321,17 @@ class sopra_database:
             frac = kwargs[material]
 
         # Navigate to the correct folder that contains temperature dependent data...
-        path = os.path.join(self.__SOPRA_PATH, self.__fname + "_" + mat_fraction.upper())
+        path = os.path.join(
+            self.__SOPRA_PATH, self.__fname + "_" + mat_fraction.upper()
+        )
         try:
             os.stat(path)
 
         except FileNotFoundError:
-            print("load_composition :: WARNING :: Material folder does not exists... Check materials list or check" +
-                  " that composition material is correct...")
+            print(
+                "load_composition :: WARNING :: Material folder does not exists... Check materials list or check"
+                + " that composition material is correct..."
+            )
             # If material folder is not found exit program as nothing more useful can be done...
             sys.exit()
 
@@ -285,8 +351,14 @@ class sopra_database:
                 Num.append("0")
                 COMP.append(float(Num[0]))
 
-                Wav, n, k = np.genfromtxt(os.path.join(path, files), delimiter="*",
-                                          skip_header=3, skip_footer=3, usecols=(2, 3, 4), unpack=True)
+                Wav, n, k = np.genfromtxt(
+                    os.path.join(path, files),
+                    delimiter="*",
+                    skip_header=3,
+                    skip_footer=3,
+                    usecols=(2, 3, 4),
+                    unpack=True,
+                )
 
                 if Lambda is not None:
                     # Interpolate if the Lambda argument is specified, if not pass loaded Wav, n and k...
@@ -300,11 +372,17 @@ class sopra_database:
 
         # Check and see if the entered temperature is within the range of data...
         if frac <= min(COMP):
-            print("load_composition :: WARNING :: Desired composition < than the minimum (%6.1f %%)" % min(COMP))
+            print(
+                "load_composition :: WARNING :: Desired composition < than the minimum (%6.1f %%)"
+                % min(COMP)
+            )
             print("Returned interpolated data will be that at %6.1f %%" % min(COMP))
 
         elif frac >= max(COMP):
-            print("load_composition :: WARNING :: Desired composition > than the maximum (%6.1f %%)" % max(COMP))
+            print(
+                "load_composition :: WARNING :: Desired composition > than the maximum (%6.1f %%)"
+                % max(COMP)
+            )
             print("Returned interpolated data will be that at %6.1f %%" % max(COMP))
 
         # use linear interpolation to interpolate the data at the desired temperature...

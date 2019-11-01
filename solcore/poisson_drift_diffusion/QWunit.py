@@ -43,8 +43,11 @@ class QWunit(Structure):
         super().__init__(*args, **kwargs)
 
         if len(self) < 3:
-            print("ERROR creating a QWunit: a minimum of 3 layers is necessary to make a unit. Only {0} found. ".format(
-                len(self)))
+            print(
+                "ERROR creating a QWunit: a minimum of 3 layers is necessary to make a unit. Only {0} found. ".format(
+                    len(self)
+                )
+            )
             sys.exit()
 
         self.QW_number = 0
@@ -66,15 +69,17 @@ class QWunit(Structure):
         #         self.QW_number))
         #     sys.exit()
 
-        if 'substrate' not in kwargs.keys():
-            print("ERROR creating a QWunit: There must be a substrate defined with the keyword 'substrate'. ")
+        if "substrate" not in kwargs.keys():
+            print(
+                "ERROR creating a QWunit: There must be a substrate defined with the keyword 'substrate'. "
+            )
             sys.exit()
 
-        # We update the structure of labels since that is what the quantum mechanics modules uses to identify the regions, not the role. 
+        # We update the structure of labels since that is what the quantum mechanics modules uses to identify the regions, not the role.
         for index in range(len(self)):
             self.labels[index] = self[index].role
 
-        self.T = kwargs['T'] if 'T' in kwargs.keys() else 298.0
+        self.T = kwargs["T"] if "T" in kwargs.keys() else 298.0
 
     # ------
     def RecalculateKP(self, index, mode):
@@ -82,12 +87,18 @@ class QWunit(Structure):
         
         This is already done in the Schrodinger solver, but it does not produce that information as output. We do it so here.
         """
-        if mode == 'kp8x8_bulk':
-            kp_result = kp8x8_bulk(material=self[index].material, host_material=self.substrate, averaging_points=6)
+        if mode == "kp8x8_bulk":
+            kp_result = kp8x8_bulk(
+                material=self[index].material,
+                host_material=self.substrate,
+                averaging_points=6,
+            )
             c, hh, lh, so, me, mhh, mlh, mso = kp_result
 
             # We recalculate the bandgap adn the electron afinity
-            Ec = self[index].material.valence_band_offset + self[index].material.band_gap
+            Ec = (
+                self[index].material.valence_band_offset + self[index].material.band_gap
+            )
             Eb = c - max(hh, lh)
             Xb = self[index].material.electron_affinity - c + Ec
         else:
@@ -96,9 +107,14 @@ class QWunit(Structure):
             mlh = self[index].material.eff_mass_lh_z * m0
 
             # Idem
-            strain_parameters = strain_calculation_parameters(self.substrate, self[index].material, should_print=False)
-            Eb = self[index].material.band_gap + strain_parameters.delta_Ec + max(
-                strain_parameters.delta_Ehh, strain_parameters.delta_Elh)
+            strain_parameters = strain_calculation_parameters(
+                self.substrate, self[index].material, should_print=False
+            )
+            Eb = (
+                self[index].material.band_gap
+                + strain_parameters.delta_Ec
+                + max(strain_parameters.delta_Ehh, strain_parameters.delta_Elh)
+            )
             Xb = self[index].material.electron_affinity - strain_parameters.delta_Ec
 
         Ncc = 2 * (2 * pi * me * kb * self.T / h ** 2) ** 1.5
@@ -121,9 +137,9 @@ class QWunit(Structure):
 
         aver = np.zeros(len(self))
         for i in range(len(self)):
-            ind = np.searchsorted(x, cumul[i:i + 2])
-            yy = y[ind[0]:ind[1] - 1]
-            xx = x[ind[0]:ind[1] - 1]
+            ind = np.searchsorted(x, cumul[i : i + 2])
+            yy = y[ind[0] : ind[1] - 1]
+            xx = x[ind[0] : ind[1] - 1]
             aver[i] = np.trapz(yy, xx) / (xx[-1] - xx[0])
 
         return aver
@@ -141,9 +157,9 @@ class QWunit(Structure):
 
         aver = np.zeros(len(self))
         for i in range(len(self)):
-            ind = np.searchsorted(x, cumul[i:i + 2])
-            yy = y[ind[0]:ind[1] - 1]
-            xx = x[ind[0]:ind[1] - 1]
+            ind = np.searchsorted(x, cumul[i : i + 2])
+            yy = y[ind[0] : ind[1] - 1]
+            xx = x[ind[0] : ind[1] - 1]
             aver[i] = np.trapz(yy, xx)
 
         return aver
@@ -153,11 +169,20 @@ class QWunit(Structure):
 
         For the barriers, the electron afinity and band gap is the same than in bulk, modified by the kp calculation, if necesary."""
 
-        eff_c_shift = np.where(SR["E"]["Ee"][0] > SR["potentials"]["Ve"], SR["E"]["Ee"][0],
-                               SR["potentials"]["Ve"]) - SR["potentials"]["Ve"]
+        eff_c_shift = (
+            np.where(
+                SR["E"]["Ee"][0] > SR["potentials"]["Ve"],
+                SR["E"]["Ee"][0],
+                SR["potentials"]["Ve"],
+            )
+            - SR["potentials"]["Ve"]
+        )
 
-        max_VB = np.where(SR["potentials"]["Vhh"] > SR["potentials"]["Vlh"], SR["potentials"]["Vhh"],
-                          SR["potentials"]["Vlh"])
+        max_VB = np.where(
+            SR["potentials"]["Vhh"] > SR["potentials"]["Vlh"],
+            SR["potentials"]["Vhh"],
+            SR["potentials"]["Vlh"],
+        )
 
         max_hole_level = max(SR["E"]["Ehh"][0], SR["E"]["Elh"][0])
 
@@ -177,9 +202,15 @@ class QWunit(Structure):
             self[index].material.eff_mass_hh_z = mhh
             self[index].material.eff_mass_lh_z = mlh
 
-            self[index].material.__dict__["Ncc"] = 2 * (2 * pi * me * kb * self.T / h ** 2) ** 1.5
-            self[index].material.__dict__["Nvhh"] = 2 * (2 * pi * mhh * kb * self.T / h ** 2) ** 1.5
-            self[index].material.__dict__["Nvlh"] = 2 * (2 * pi * mlh * kb * self.T / h ** 2) ** 1.5
+            self[index].material.__dict__["Ncc"] = (
+                2 * (2 * pi * me * kb * self.T / h ** 2) ** 1.5
+            )
+            self[index].material.__dict__["Nvhh"] = (
+                2 * (2 * pi * mhh * kb * self.T / h ** 2) ** 1.5
+            )
+            self[index].material.__dict__["Nvlh"] = (
+                2 * (2 * pi * mlh * kb * self.T / h ** 2) ** 1.5
+            )
 
             self[index].band_gap = Eb
             self[index].electron_affinity = Xb
@@ -199,8 +230,10 @@ class QWunit(Structure):
 
         From a physical porint of view, it can certainly be done much better"""
 
-        science_reference("Density of state for QWs in the PDD solver",
-                          "J. Nelson, M. Paxman, K. W. J. Barnham, J. S. Roberts, and C. Button, “Steady-state carrier escape from single quantum wells,” IEEE J. Quantum Electron., vol. 29, no. 6, pp. 1460–1468, 1993")
+        science_reference(
+            "Density of state for QWs in the PDD solver",
+            "J. Nelson, M. Paxman, K. W. J. Barnham, J. S. Roberts, and C. Button, “Steady-state carrier escape from single quantum wells,” IEEE J. Quantum Electron., vol. 29, no. 6, pp. 1460–1468, 1993",
+        )
 
         # We use the average barrier electron afinity (considering only the barriers at the ends) as the electron afinity of the barrier
         Xb = (self[0].electron_affinity + self[-1].electron_affinity) / 2
@@ -212,11 +245,23 @@ class QWunit(Structure):
         hh_prob = []
         lh_prob = []
         for i in range(len(self.elevels)):
-            e_prob.append(self.get_probability_per_layer(SR["x"], SR["wavefunctions"]['psi_e'][i] ** 2))
+            e_prob.append(
+                self.get_probability_per_layer(
+                    SR["x"], SR["wavefunctions"]["psi_e"][i] ** 2
+                )
+            )
         for i in range(len(self.hhlevels)):
-            hh_prob.append(self.get_probability_per_layer(SR["x"], SR["wavefunctions"]['psi_hh'][i] ** 2))
+            hh_prob.append(
+                self.get_probability_per_layer(
+                    SR["x"], SR["wavefunctions"]["psi_hh"][i] ** 2
+                )
+            )
         for i in range(len(self.lhlevels)):
-            lh_prob.append(self.get_probability_per_layer(SR["x"], SR["wavefunctions"]['psi_lh'][i] ** 2))
+            lh_prob.append(
+                self.get_probability_per_layer(
+                    SR["x"], SR["wavefunctions"]["psi_lh"][i] ** 2
+                )
+            )
 
         for index in range(len(self)):
             Ncc = self[index].material.Ncc
@@ -232,25 +277,37 @@ class QWunit(Structure):
             for i, eLevel in enumerate(self.elevels):
                 Nqw = Nqw + np.exp(-b * eLevel) * e_prob[i][index]
 
-            Nqw = 2. / self[index].width * (Ncc / 2.) ** (2. / 3.) * Nqw
+            Nqw = 2.0 / self[index].width * (Ncc / 2.0) ** (2.0 / 3.0) * Nqw
             self[index].material.Nc = self[index].material.Nc + Nqw
 
             # For holes ------------------------------------------------------------------
 
             #   1- Contribution from bulk:
             Vconf = Xb + Egb - self[index].electron_affinity - self[index].band_gap
-            self[index].material.__dict__["Nv"] = (Nvhh + Nvlh) * erfc(max(0, b * Vconf) ** 0.5)
+            self[index].material.__dict__["Nv"] = (Nvhh + Nvlh) * erfc(
+                max(0, b * Vconf) ** 0.5
+            )
 
             #   2- Contribution from heavy holes confined levels
             Nqw = 0
             for i, hhLevel in enumerate(self.hhlevels):
-                Nqw = Nqw + (Nvhh / 2.) ** (2. / 3.) * np.exp(-b * hhLevel) * hh_prob[i][index]
+                Nqw = (
+                    Nqw
+                    + (Nvhh / 2.0) ** (2.0 / 3.0)
+                    * np.exp(-b * hhLevel)
+                    * hh_prob[i][index]
+                )
 
                 #   3- Contribution from light holes confined levels
             for i, lhLevel in enumerate(self.lhlevels):
-                Nqw = Nqw + (Nvlh / 2.) ** (2. / 3.) * np.exp(-b * lhLevel) * lh_prob[i][index]
+                Nqw = (
+                    Nqw
+                    + (Nvlh / 2.0) ** (2.0 / 3.0)
+                    * np.exp(-b * lhLevel)
+                    * lh_prob[i][index]
+                )
 
-            Nqw = 2. / self[index].width * Nqw
+            Nqw = 2.0 / self[index].width * Nqw
             self[index].material.Nv = self[index].material.Nv + Nqw
 
     # ------
@@ -261,8 +318,10 @@ class QWunit(Structure):
         - Interlayers have the bulk absorption from the barrier energy and zero below that
         - Wells have the absorption of the confined levels below the barrier energy and of the bulk above it. The calculation is similar to: C. I. Cabrera, J. C. Rimada, J. P. Connolly, and L. Hernandez, “Modelling of GaAsP/InGaAs/GaAs strain-balanced multiple-quantum well solar cells,” J. Appl. Phys., vol. 113, no. 2, p. 024512, Jan. 2013."""
 
-        science_reference("Absorption for QWs in the PDD solver",
-                          "C. I. Cabrera, J. C. Rimada, J. P. Connolly, and L. Hernandez, “Modelling of GaAsP/InGaAs/GaAs strain-balanced multiple-quantum well solar cells,” J. Appl. Phys., vol. 113, no. 2, p. 024512, Jan. 2013.")
+        science_reference(
+            "Absorption for QWs in the PDD solver",
+            "C. I. Cabrera, J. C. Rimada, J. P. Connolly, and L. Hernandez, “Modelling of GaAsP/InGaAs/GaAs strain-balanced multiple-quantum well solar cells,” J. Appl. Phys., vol. 113, no. 2, p. 024512, Jan. 2013.",
+        )
 
         edge = (self[0].band_gap + self[-1].band_gap) / 2 / q
         edge_index = np.abs(self.wl - 1240e-9 / edge).argmin()
@@ -272,35 +331,47 @@ class QWunit(Structure):
         for index in range(len(self)):
             if use_Adachi:
                 try:
-                    self[index].material.absorption = \
-                        adachi_alpha.create_adachi_alpha(SolcoreMaterialToStr(self[index].material), T=self.T,
-                                                         wl=self.wl)[
-                            3]  # 0 = Energy, 1 = n, 2 = k, 3 = Absorption
+                    self[index].material.absorption = adachi_alpha.create_adachi_alpha(
+                        SolcoreMaterialToStr(self[index].material), T=self.T, wl=self.wl
+                    )[
+                        3
+                    ]  # 0 = Energy, 1 = n, 2 = k, 3 = Absorption
                 except:
-                    self[index].material.absorption = self[index].material.alpha(self.wl)
+                    self[index].material.absorption = self[index].material.alpha(
+                        self.wl
+                    )
                     # self[index].material.absorption[self.wl>1240e-9/sc.asUnit(self[index].material.band_gap, 'eV' )] = 0
 
             else:
                 try:
-                    self[index].material.absorption = self[index].material.alpha(self.wl)
+                    self[index].material.absorption = self[index].material.alpha(
+                        self.wl
+                    )
                     # self[index].material.absorption[self.wl>1240e-9/sc.asUnit(self[index].material.band_gap, 'eV' )] = 0
                 except:
-                    print("Warning: Using Adachi calculation to estimate the absorption coefficient of layer: ",
-                          self[index])
-                    self[index].material.absorption = \
-                        adachi_alpha.create_adachi_alpha(SolcoreMaterialToStr(self[index].material), T=self.T,
-                                                         wl=self.wl)[
-                            3]  # 0 = Energy, 1 = n, 2 = k, 3 = Absorption
+                    print(
+                        "Warning: Using Adachi calculation to estimate the absorption coefficient of layer: ",
+                        self[index],
+                    )
+                    self[index].material.absorption = adachi_alpha.create_adachi_alpha(
+                        SolcoreMaterialToStr(self[index].material), T=self.T, wl=self.wl
+                    )[
+                        3
+                    ]  # 0 = Energy, 1 = n, 2 = k, 3 = Absorption
 
             # self[index].material.absorption[ edge_index: ] = 0
             if self.labels[index] is "well":
 
-                self[index].material.absorption = self[index].material.absorption - self[index].material.absorption[
-                    edge_index]
+                self[index].material.absorption = (
+                    self[index].material.absorption
+                    - self[index].material.absorption[edge_index]
+                )
                 self[index].material.absorption[edge_index:] = 0
                 self[index].material.absorption[self[index].material.absorption < 0] = 0
-                self[index].material.absorption = self[index].material.absorption + SR["alpha"][1] * self[
-                    index].width / self.QW_width
+                self[index].material.absorption = (
+                    self[index].material.absorption
+                    + SR["alpha"][1] * self[index].width / self.QW_width
+                )
 
             elif self.labels[index] is "interlayer":
                 self[index].material.absorption[edge_index:] = 0
@@ -311,9 +382,22 @@ class QWunit(Structure):
         self.absorption += self[index].material.absorption
 
     # ------
-    def solve(self, Efield=0, WLsteps=(300e-9, 1100e-9, 801), wavelengths=None, periodic=True, filter_strength=0.0,
-              blur=None, blurmode="left", offset=0, mode='kp8x8_bulk', use_Adachi=False, calculate_absorption=True,
-              alpha_params=None, T=293):
+    def solve(
+        self,
+        Efield=0,
+        WLsteps=(300e-9, 1100e-9, 801),
+        wavelengths=None,
+        periodic=True,
+        filter_strength=0.0,
+        blur=None,
+        blurmode="left",
+        offset=0,
+        mode="kp8x8_bulk",
+        use_Adachi=False,
+        calculate_absorption=True,
+        alpha_params=None,
+        T=293,
+    ):
         """ Solves the structure, calculating the energy levels, the absorption, etc. """
 
         if alpha_params == None:
@@ -331,21 +415,33 @@ class QWunit(Structure):
                 "espace": E,
                 "hwhm": si("4meV"),
                 "dimensionality": 0.2,
-                "line_shape": "Gauss"
+                "line_shape": "Gauss",
             }
         else:
             self.wl = 1240 / (alpha_params["espace"] * 1e-9) * q
 
-        SR, bands = schrodinger(self, mode=mode, periodic=True, calculate_absorption=calculate_absorption,
-                                Efield=Efield, blur=None, blurmode=blurmode, alpha_params=alpha_params,
-                                filter_strength=filter_strength)
+        SR, bands = schrodinger(
+            self,
+            mode=mode,
+            periodic=True,
+            calculate_absorption=calculate_absorption,
+            Efield=Efield,
+            blur=None,
+            blurmode=blurmode,
+            alpha_params=alpha_params,
+            filter_strength=filter_strength,
+        )
 
         self.schrodinger = SR
         self.bands = bands
 
         self.__dict__["elevels"] = (SR["E"]["Ee"][:] - min(SR["potentials"]["Ve"])) / q
-        self.__dict__["hhlevels"] = (max(SR["potentials"]["Vhh"]) - SR["E"]["Ehh"][:]) / q
-        self.__dict__["lhlevels"] = (max(SR["potentials"]["Vlh"]) - SR["E"]["Elh"][:]) / q
+        self.__dict__["hhlevels"] = (
+            max(SR["potentials"]["Vhh"]) - SR["E"]["Ehh"][:]
+        ) / q
+        self.__dict__["lhlevels"] = (
+            max(SR["potentials"]["Vlh"]) - SR["E"]["Elh"][:]
+        ) / q
 
         self.RecalculateBandEdges(mode, SR)
         self.RecalculateDensityOfStates(SR)
@@ -354,8 +450,18 @@ class QWunit(Structure):
 
         return SR
 
-    def GetEffectiveQW(self, calculate_absorption=True, wavelengths=None, periodic=True, filter_strength=0.0, blur=None,
-                       blurmode="left", mode='kp8x8_bulk', use_Adachi=False, alpha_params=None):
+    def GetEffectiveQW(
+        self,
+        calculate_absorption=True,
+        wavelengths=None,
+        periodic=True,
+        filter_strength=0.0,
+        blur=None,
+        blurmode="left",
+        mode="kp8x8_bulk",
+        use_Adachi=False,
+        alpha_params=None,
+    ):
         """ Considers the device as a QW and solves its properties, including the modification of the bandeges due to strain, the efective mases and the absorption coefficient. The output is a list of layers made with materials with the effective properties after considering all these effects in addition to the quantum confinement.
 
         :param device: The device structure
@@ -371,17 +477,29 @@ class QWunit(Structure):
         :param alpha_params:
         :return: A dictionary with the output of the Schrodinger solver.
         """
-        print('Solving QW properties...')
+        print("Solving QW properties...")
 
-        self.solve(calculate_absorption=calculate_absorption, wavelengths=wavelengths,
-                   T=self.T, periodic=periodic, filter_strength=filter_strength, blur=blur,
-                   blurmode=blurmode, mode=mode, use_Adachi=use_Adachi, alpha_params=alpha_params)
+        self.solve(
+            calculate_absorption=calculate_absorption,
+            wavelengths=wavelengths,
+            T=self.T,
+            periodic=periodic,
+            filter_strength=filter_strength,
+            blur=blur,
+            blurmode=blurmode,
+            mode=mode,
+            use_Adachi=use_Adachi,
+            alpha_params=alpha_params,
+        )
 
         for i in range(len(self)):
             self[i].material.band_gap = self[i].eff_band_gap
             self[i].material.electron_affinity = self[i].eff_electron_affinity
             self[i].material.ni = np.sqrt(
-                self[i].material.Nc * self[i].material.Nv * np.exp(-self[i].eff_band_gap / (kb * self.T)))
+                self[i].material.Nc
+                * self[i].material.Nv
+                * np.exp(-self[i].eff_band_gap / (kb * self.T))
+            )
 
         # Finally, we re-build a list of layers with the effective properties
         new_QW = []
@@ -395,9 +513,20 @@ class QWunit(Structure):
             layer_mat.k = interp1d(self.wl, kk, bounds_error=False, fill_value=(0, 0))
 
             # And the radiative recombination parameter
-            inter = lambda E: 1.0 / layer_mat.ni ** 2 * 2 * pi / (h ** 3 * c ** 2) * layer_mat.n(
-                1240e-9 / (E / q)) ** 2 * layer_mat.alphaE(E) * np.exp(-E / (kb * self.T)) * E ** 2
-            Br = -np.trapz(np.nan_to_num(inter(1240e-9 / self.wl * q)), 1240e-9 / self.wl * q)
+            inter = (
+                lambda E: 1.0
+                / layer_mat.ni ** 2
+                * 2
+                * pi
+                / (h ** 3 * c ** 2)
+                * layer_mat.n(1240e-9 / (E / q)) ** 2
+                * layer_mat.alphaE(E)
+                * np.exp(-E / (kb * self.T))
+                * E ** 2
+            )
+            Br = -np.trapz(
+                np.nan_to_num(inter(1240e-9 / self.wl * q)), 1240e-9 / self.wl * q
+            )
             layer_mat.radiative_recombination = Br
 
             # And add the layer to the list of layers
@@ -412,16 +541,20 @@ class QWunit(Structure):
 def SolcoreMaterialToStr(material_input):
     """Translate a solcore material composition into a string that is what the Adachi calculator needs."""
 
-    material_string = material_input.__str__().strip('<>').split(" ")
+    material_string = material_input.__str__().strip("<>").split(" ")
     material_name = material_string[0].strip("'")
-    composition = {'material': material_name}
+    composition = {"material": material_name}
     if len(material_name) > 4:
         material_composition = material_string[2].split("=")
         for i, comp in enumerate(material_composition):
             if comp in material_name:
-                composition['element'] = material_composition[i]
-                composition['fraction'] = float(material_composition[i + 1])
+                composition["element"] = material_composition[i]
+                composition["fraction"] = float(material_composition[i + 1])
 
-    output = "%s {'%s':%s}" % (composition['material'], composition['element'], composition['fraction'])
+    output = "%s {'%s':%s}" % (
+        composition["material"],
+        composition["element"],
+        composition["fraction"],
+    )
 
     return output

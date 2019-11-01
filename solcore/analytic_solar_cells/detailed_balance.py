@@ -7,7 +7,7 @@ from solcore import si
 from solcore.state import State
 
 db_options = State()
-db_options.db_mode = 'boltzmann'
+db_options.db_mode = "boltzmann"
 
 
 def iv_detailed_balance(junction, options):
@@ -27,29 +27,31 @@ def iv_detailed_balance(junction, options):
         Eg = junction.Eg
         n = junction.n
 
-        if not hasattr(junction, 'eqe'):
+        if not hasattr(junction, "eqe"):
             qe_detailed_balance(junction, wl)
 
         eqe = junction.eqe
         As = surface_integral(junction, wl)
 
-        R_shunt = min(junction.R_shunt, 1e14) if hasattr(junction, 'R_shunt') else 1e14
+        R_shunt = min(junction.R_shunt, 1e14) if hasattr(junction, "R_shunt") else 1e14
 
     except AttributeError as err:
         raise AttributeError(
-            'ERROR calculating the IV for the detailed balance Junction kind. Junction is missing one essential argument: {}'.format(
-                err))
+            "ERROR calculating the IV for the detailed balance Junction kind. Junction is missing one essential argument: {}".format(
+                err
+            )
+        )
 
     j01 = 2 * q * n ** 2 * c
     # We loop over the (internal) voltages to get the (internal) current. The actual voltage applied is always smaller than Eg.
     junction.voltage = options.internal_voltages
 
-    if mode == 'boltzmann':
+    if mode == "boltzmann":
         # If Boltzmann, the calculation can be vectorized as the voltages is outside the integral. No limit to V
         volt = junction.voltage
 
         def emis(v, T):
-            boltz = j01 * (As / wl ** 4) * np.exp(- (h * c / wl) / (kb * T))
+            boltz = j01 * (As / wl ** 4) * np.exp(-(h * c / wl) / (kb * T))
             junction.j01 = np.trapz(boltz, wl)
             out = np.trapz(boltz, wl) * np.exp((q * v) / (kb * T))
             return out
@@ -63,20 +65,26 @@ def iv_detailed_balance(junction, options):
             for vv in v:
                 fermi = (As / wl ** 4) / (np.exp((h * c / wl - q * vv) / (kb * T)) - 1)
                 out.append(np.trapz(fermi, wl))
-            return j01*np.array(out)
+            return j01 * np.array(out)
 
     # Now we calculate the generation current, made of thermal generation and photogeneration
     jthermal = emis(np.array([0]), Ta)[0]
     if light:
-        wl, ph = options.light_source.spectrum(x=wl, output_units='photon_flux_per_m')
+        wl, ph = options.light_source.spectrum(x=wl, output_units="photon_flux_per_m")
         jsc = q * np.trapz(eqe(wl) * ph, wl) + jthermal
     else:
         jsc = jthermal
 
     junction.current = emis(volt, T) + volt / R_shunt - jsc
 
-    junction.iv = interp1d(junction.voltage, junction.current, kind='linear', bounds_error=False, assume_sorted=True,
-                           fill_value=(junction.current[0], junction.current[-1]))
+    junction.iv = interp1d(
+        junction.voltage,
+        junction.current,
+        kind="linear",
+        bounds_error=False,
+        assume_sorted=True,
+        fill_value=(junction.current[0], junction.current[-1]),
+    )
 
 
 def qe_detailed_balance(junction, wl):
@@ -100,7 +108,7 @@ def qe_detailed_balance(junction, wl):
     except AttributeError:
         junction.eqe = junction.absorptance
 
-    junction.qe = State({'WL': wl, 'IQE': junction.iqe(wl), 'EQE': junction.eqe(wl)})
+    junction.qe = State({"WL": wl, "IQE": junction.iqe(wl), "EQE": junction.eqe(wl)})
 
 
 def absorptance_detailed_balance(junction):
@@ -111,8 +119,8 @@ def absorptance_detailed_balance(junction):
     :param junction: Junction object of kind "DB"
     """
     try:
-        if not hasattr(junction, 'absorptance'):
-            wlg = si(1240 / junction.Eg, 'nm')
+        if not hasattr(junction, "absorptance"):
+            wlg = si(1240 / junction.Eg, "nm")
             A = min(junction.A, 1)
 
             def absorptance(wl):
@@ -122,8 +130,10 @@ def absorptance_detailed_balance(junction):
 
     except AttributeError as err:
         raise AttributeError(
-            'ERROR calculating absorptance for the detailed balance Junction kind.\nJunction is missing one essential argument: {}'.format(
-                err))
+            "ERROR calculating absorptance for the detailed balance Junction kind.\nJunction is missing one essential argument: {}".format(
+                err
+            )
+        )
 
 
 def surface_integral(junction, wl):
@@ -179,7 +189,7 @@ def surface_integral(junction, wl):
     return 2 * np.pi * (A_back + A_front)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import numpy as np
     import matplotlib.pyplot as plt
 
@@ -190,7 +200,7 @@ if __name__ == '__main__':
     options = State()
 
     wl = np.linspace(300, 900, 300) * 1e-9
-    GaAs = material('GaAs')(T=300)
+    GaAs = material("GaAs")(T=300)
 
     n = GaAs.n(wl)
     cos_tc = np.sqrt(1 - 1 / n ** 2)
@@ -208,11 +218,18 @@ if __name__ == '__main__':
     #
     As = surface_integral(junction, options)
 
-    jE = 2 * q * n ** 2 * c * (1 / wl ** 4) * As / (np.exp((h * c / wl - q * V) / kb / T) - 1)
+    jE = (
+        2
+        * q
+        * n ** 2
+        * c
+        * (1 / wl ** 4)
+        * As
+        / (np.exp((h * c / wl - q * V) / kb / T) - 1)
+    )
 
     plt.plot(wl, jE)
     plt.show()
-
 
     #
     # all_cos_t = np.linspace(min(cos_tc), 1, 10)

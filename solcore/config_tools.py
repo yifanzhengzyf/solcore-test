@@ -7,8 +7,8 @@ import shutil
 import solcore
 import glob
 
-home_folder: str = os.path.expanduser('~')
-user_config: str = os.path.join(home_folder, '.solcore_config.txt')
+home_folder: str = os.path.expanduser("~")
+user_config: str = os.path.join(home_folder, ".solcore_config.txt")
 user_config_data = ConfigParser()
 user_config_data.read(user_config)
 
@@ -23,20 +23,22 @@ def reset_defaults(confirm: bool = False) -> None:
     """
     global user_config_data
     if not confirm:
-        response = input('This action will delete any customisation of the Solcore configuration. '
-                         'Are you sure you want to continue (Y/n)?')
+        response = input(
+            "This action will delete any customisation of the Solcore configuration. "
+            "Are you sure you want to continue (Y/n)?"
+        )
 
-        if response in 'Yy':
+        if response in "Yy":
             confirm = True
 
     if confirm:
         shutil.copy2(solcore.default_config, user_config)
 
         user_config_data.read(user_config)
-        user_config_data.remove_option(section='Configuration', option='version')
+        user_config_data.remove_option(section="Configuration", option="version")
         save_user_config()
 
-        print('Default Solcore configuration has been restored!')
+        print("Default Solcore configuration has been restored!")
 
 
 def save_user_config() -> None:
@@ -44,7 +46,7 @@ def save_user_config() -> None:
 
     :return: None
     """
-    with open(user_config, 'w') as fp:
+    with open(user_config, "w") as fp:
         user_config_data.write(fp)
 
 
@@ -58,18 +60,26 @@ def remove_source(section: str, name: str) -> None:
     :return: None
     """
     if name not in user_config_data.options(section):
-        print('Source {} does not exists. Valid options are: {}'.format(name, user_config_data.options(section)))
+        print(
+            "Source {} does not exists. Valid options are: {}".format(
+                name, user_config_data.options(section)
+            )
+        )
         return
 
     if name in default_config_data.options(section):
-        print('Source {} is a default Solcore source. It can not be removed and will be disabled instead.'.format(name))
-        add_units_source(name, '')
+        print(
+            "Source {} is a default Solcore source. It can not be removed and will be disabled instead.".format(
+                name
+            )
+        )
+        add_units_source(name, "")
         return
 
     user_config_data.remove_option(section, name)
     save_user_config()
 
-    print('{}:{} source removed!'.format(section, name))
+    print("{}:{} source removed!".format(section, name))
 
 
 def add_source(section: str, name: str, location: str) -> None:
@@ -83,7 +93,7 @@ def add_source(section: str, name: str, location: str) -> None:
     user_config_data.set(section, name, value=location)
     save_user_config()
 
-    print('{}:{} source added!'.format(section, name))
+    print("{}:{} source added!".format(section, name))
 
 
 def restore_default_source(section: str, name: str) -> None:
@@ -94,14 +104,22 @@ def restore_default_source(section: str, name: str) -> None:
     :return: None
     """
     if name not in default_config_data.options(section):
-        print('There is no default value for {} source: {}. '.format(section, name))
-        print('Available default {} sources are: {}'.format(section, default_config_data.options(section)))
+        print("There is no default value for {} source: {}. ".format(section, name))
+        print(
+            "Available default {} sources are: {}".format(
+                section, default_config_data.options(section)
+            )
+        )
         return
 
     user_config_data[section][name] = default_config_data[section][name]
     save_user_config()
 
-    print('Default Solcore value for {} source {} has been restored!'.format(section, name))
+    print(
+        "Default Solcore value for {} source {} has been restored!".format(
+            section, name
+        )
+    )
 
 
 def add_units_source(name: str, location: str) -> None:
@@ -111,7 +129,7 @@ def add_units_source(name: str, location: str) -> None:
     :param location: The full path to the location of the source. The source must be a ConfigParser formatted file.
     :return: None
     """
-    add_source('Units', name, location=location)
+    add_source("Units", name, location=location)
 
 
 def add_parameters_source(name: str, location: str) -> None:
@@ -121,7 +139,7 @@ def add_parameters_source(name: str, location: str) -> None:
     :param location: The full path to the location of the source. The source must be a ConfigParser formatted file.
     :return: None
     """
-    add_source('Parameters', name, location=location)
+    add_source("Parameters", name, location=location)
 
 
 def add_materials_source(name: str, location: str) -> None:
@@ -132,7 +150,7 @@ def add_materials_source(name: str, location: str) -> None:
     data of the material. See the the Material System in the manual for more information.
     :return: None
     """
-    add_source('Materials', name, location=location)
+    add_source("Materials", name, location=location)
 
 
 def remove_units_source(name: str) -> None:
@@ -141,7 +159,7 @@ def remove_units_source(name: str) -> None:
     :param name: The name of the source.
     :return: None
     """
-    remove_source('Units', name)
+    remove_source("Units", name)
 
 
 def remove_parameters_source(name: str) -> None:
@@ -150,7 +168,7 @@ def remove_parameters_source(name: str) -> None:
     :param name: The name of the source.
     :return: None
     """
-    remove_source('Parameters', name)
+    remove_source("Parameters", name)
 
 
 def remove_materials_source(name: str) -> None:
@@ -159,7 +177,7 @@ def remove_materials_source(name: str) -> None:
     :param name: The name of the source.
     :return: None
     """
-    remove_source('Materials', name)
+    remove_source("Materials", name)
 
 
 def restore_default_units_source(name: str) -> None:
@@ -168,7 +186,7 @@ def restore_default_units_source(name: str) -> None:
     :param name: The name of the source.
     :return: None
     """
-    restore_default_source('Units', name)
+    restore_default_source("Units", name)
 
 
 def restore_default_parameters_source(name: str) -> None:
@@ -177,7 +195,7 @@ def restore_default_parameters_source(name: str) -> None:
     :param name: The name of the source.
     :return: None
     """
-    restore_default_source('Parameters', name)
+    restore_default_source("Parameters", name)
 
 
 def restore_default_materials_source(name: str) -> None:
@@ -186,7 +204,7 @@ def restore_default_materials_source(name: str) -> None:
     :param name: The name of the source.
     :return: None
     """
-    restore_default_source('Materials', name)
+    restore_default_source("Materials", name)
 
 
 def welcome_message(show: bool) -> None:
@@ -195,7 +213,7 @@ def welcome_message(show: bool) -> None:
     :param show: True/False for showing/hiding the welcome message
     :return: None
     """
-    user_config_data['Configuration']['welcome_message'] = int(show)
+    user_config_data["Configuration"]["welcome_message"] = int(show)
 
 
 def verbose_loading(show: bool) -> None:
@@ -204,7 +222,7 @@ def verbose_loading(show: bool) -> None:
     :param show: True/False for showing/hiding the loading messages
     :return: None
     """
-    user_config_data['Configuration']['verbose_loading'] = int(show)
+    user_config_data["Configuration"]["verbose_loading"] = int(show)
 
 
 def set_location_of_spice(location: str) -> None:
@@ -213,7 +231,7 @@ def set_location_of_spice(location: str) -> None:
     :param location: The location of the spice executable.
     :return: None
     """
-    user_config_data['External programs']['spice'] = location
+    user_config_data["External programs"]["spice"] = location
     save_user_config()
 
 
@@ -223,7 +241,7 @@ def set_location_of_smarts(location: str) -> None:
     :param location: The location of the SMARTS distribution.
     :return: None
     """
-    user_config_data['External programs']['smarts'] = location
+    user_config_data["External programs"]["smarts"] = location
     save_user_config()
 
 
@@ -234,9 +252,9 @@ def get_current_config() -> None:
     """
 
     for section in user_config_data.sections():
-        print('[{}]'.format(section))
+        print("[{}]".format(section))
         for option in user_config_data.options(section):
-            print('{} = {}'.format(option, user_config_data.get(section, option)))
+            print("{} = {}".format(option, user_config_data.get(section, option)))
 
         print()
 
@@ -247,9 +265,11 @@ def check_user_config() -> None:
     :return: None
     """
     if len(user_config_data.sections()) == 0:
-        response = input('No user configuration was detected. Do you want to create one (Y/n)?')
+        response = input(
+            "No user configuration was detected. Do you want to create one (Y/n)?"
+        )
 
-        if response in 'Yy':
+        if response in "Yy":
             reset_defaults(True)
             user_config_data = ConfigParser()
             user_config_data.read(user_config)

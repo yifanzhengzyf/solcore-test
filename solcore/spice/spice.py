@@ -9,7 +9,7 @@ import solcore
 
 
 class spice:
-    engine = solcore.config.get('External programs', 'spice')
+    engine = solcore.config.get("External programs", "spice")
     input_file = "current_spice.cir"
     output_file = "current_spice.out"
 
@@ -31,7 +31,9 @@ def solve_circuit(spice_file_contents, engine=spice.engine, raw=True):
 
     spice.engine = engine
 
-    with tempfile.TemporaryDirectory(prefix="tmp", suffix="_sc3NGSPICE") as working_directory:
+    with tempfile.TemporaryDirectory(
+        prefix="tmp", suffix="_sc3NGSPICE"
+    ) as working_directory:
 
         spice_file_path = os.path.join(working_directory, spice.input_file)
         spice_output_path = os.path.join(working_directory, spice.output_file)
@@ -39,7 +41,9 @@ def solve_circuit(spice_file_contents, engine=spice.engine, raw=True):
         with open(spice_file_path, "w") as f:
             f.write(spice_file_contents)
 
-        this_process = subprocess.Popen([spice.engine, '-b', spice_file_path, '-o', spice_output_path])
+        this_process = subprocess.Popen(
+            [spice.engine, "-b", spice_file_path, "-o", spice_output_path]
+        )
         this_process.wait()
 
         # this_process = subprocess.run([spice.engine, '-b', spice_file_path, '-o', spice_output_path])
@@ -81,7 +85,8 @@ def send_to_spice(spice_file_contents, engine=spice):
 
     return results
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     import matplotlib.pyplot as plt
 
     engine = spice.engine

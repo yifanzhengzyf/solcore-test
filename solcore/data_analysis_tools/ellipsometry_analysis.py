@@ -17,9 +17,9 @@ class EllipsometryData:
         :param path: Path to the file
         """
 
-        self.comment: str = ''
-        self.meas_setup: str = ''
-        self.units: str = ''
+        self.comment: str = ""
+        self.meas_setup: str = ""
+        self.units: str = ""
         self.angles: List[float] = []
 
         self.data: Dict = {}
@@ -33,7 +33,7 @@ class EllipsometryData:
         :return: None
         """
 
-        with codecs.open(path, "r", encoding='utf-8', errors='ignore') as f:
+        with codecs.open(path, "r", encoding="utf-8", errors="ignore") as f:
             lines = f.readlines()
             self.comment = lines[0]
             self.meas_setup = lines[1]
@@ -41,13 +41,13 @@ class EllipsometryData:
             for l in lines[2:]:
                 data = l.strip().split()
 
-                if data[0] in ['nm', '1/cm']:
+                if data[0] in ["nm", "1/cm"]:
                     self.units = data[0]
                     continue
-                elif data[0][0] in '0123456789':
+                elif data[0][0] in "0123456789":
                     s = 0
                     key = float(data[1])
-                elif data[0] in ['E', 'dpolE']:
+                elif data[0] in ["E", "dpolE"]:
                     s = 1
                     key = float(data[2])
                 else:
@@ -58,7 +58,7 @@ class EllipsometryData:
                     self.data[key] = []
                     self.dpol[key] = []
 
-                if data[0] == 'E' or data[0][0] in '0123456789':
+                if data[0] == "E" or data[0][0] in "0123456789":
                     self.data[key].append([])
                     self.data[key][-1].append(float(data[0 + s]))  # wl
                     self.data[key][-1].append(float(data[2 + s]))  # Psi
@@ -66,7 +66,7 @@ class EllipsometryData:
                     self.data[key][-1].append(float(data[3 + s]))  # Delta
                     self.data[key][-1].append(float(data[5 + s]))  # err Delta
 
-                elif data[0] == 'dpolE':
+                elif data[0] == "dpolE":
                     self.dpol[key].append([])
                     self.dpol[key][-1].append(float(data[1]))  # wl
                     self.dpol[key][-1].append(float(data[3]))  # dpol
@@ -75,12 +75,12 @@ class EllipsometryData:
         for key in self.data.keys():
             self.data[key] = np.array(self.data[key]).T
 
-            if 'cm' in self.units:
-                self.data[key][0] = 10000. / self.data[key][0]
+            if "cm" in self.units:
+                self.data[key][0] = 10000.0 / self.data[key][0]
             else:
                 self.data[key][0] /= 1000
 
-        self.units = 'um'
+        self.units = "um"
 
     def append_data(self, path: str) -> None:
         """ Ellipsometry data from more than one source can be combined in a single object. This function does that.
@@ -97,11 +97,15 @@ class EllipsometryData:
                 self.dpol[key] = new_data.dpol[key]
             else:
                 self.data[key] = np.hstack((new_data.data[key], self.data[key]))
-                self.data[key] = self.data[key][:, np.argsort(self.data[key][0], axis=0)]
+                self.data[key] = self.data[key][
+                    :, np.argsort(self.data[key][0], axis=0)
+                ]
 
                 try:
                     self.dpol[key] = np.vstack((new_data.dpol[key], self.dpol[key]))
-                    self.dpol[key] = self.dpol[key][:, np.argsort(self.dpol[key][0], axis=0)]
+                    self.dpol[key] = self.dpol[key][
+                        :, np.argsort(self.dpol[key][0], axis=0)
+                    ]
                 except:
                     pass
 
@@ -115,24 +119,29 @@ class EllipsometryData:
 
         if log:
             for key in self.data.keys():
-                ax[0].semilogx(self.data[key][0], self.data[key][1], 'o', mfc='none')
-                ax[1].semilogx(self.data[key][0], self.data[key][3], 'o', mfc='none')
+                ax[0].semilogx(self.data[key][0], self.data[key][1], "o", mfc="none")
+                ax[1].semilogx(self.data[key][0], self.data[key][3], "o", mfc="none")
         else:
             for key in self.data.keys():
-                ax[0].plot(self.data[key][0], self.data[key][1], 'o', mfc='none')
-                ax[1].plot(self.data[key][0], self.data[key][3], 'o', mfc='none')
+                ax[0].plot(self.data[key][0], self.data[key][1], "o", mfc="none")
+                ax[1].plot(self.data[key][0], self.data[key][3], "o", mfc="none")
 
-        plt.xlabel('Wavelength (µm)')
-        ax[0].set_ylabel(r'$\Psi$ (º)')
-        ax[1].set_ylabel(r'$\Delta$ (º)')
+        plt.xlabel("Wavelength (µm)")
+        ax[0].set_ylabel(r"$\Psi$ (º)")
+        ax[1].set_ylabel(r"$\Delta$ (º)")
         plt.show()
 
 
 class EllipsometryFitter:
     """ Class that contains all the tools to fit the properties of a OptiStack model to ellipsometry data."""
 
-    def __init__(self, data: EllipsometryData, stack: Optional[OptiStack] = None,
-                 vars: Optional[Collection] = None, wavelength_range: Optional[np.ndarray] = None) -> None:
+    def __init__(
+        self,
+        data: EllipsometryData,
+        stack: Optional[OptiStack] = None,
+        vars: Optional[Collection] = None,
+        wavelength_range: Optional[np.ndarray] = None,
+    ) -> None:
 
         self.data = data
         self.stack = stack
@@ -163,8 +172,10 @@ class EllipsometryFitter:
         :param vars: The list of free variables.
         :return: None.
         """
-        assert len(vars) == len(self.stack.models), 'Error: the lenght of the vars list must be equal to the number ' \
-                                                    'of layers in the stack = {}'.format(self.stack.num_layers)
+        assert len(vars) == len(self.stack.models), (
+            "Error: the lenght of the vars list must be equal to the number "
+            "of layers in the stack = {}".format(self.stack.num_layers)
+        )
         self.vars = vars
 
     def update_variables(self, v: List[float]) -> None:
@@ -181,14 +192,14 @@ class EllipsometryFitter:
                 model = 0
                 for j, param in enumerate(layer):
                     # Loop over the parameterts of the layer
-                    if param == 'width':
+                    if param == "width":
                         self.stack.widths[i] = v[k]
                         k += 1
                     # Parameters of the DielectricModel of the layer
-                    elif param == 'e_inf':
+                    elif param == "e_inf":
                         self.stack.models[i].e_inf = v[k]
                         k += 1
-                    elif param == 'e_gap':
+                    elif param == "e_gap":
                         self.stack.models[i].e_gap = v[k]
                         k += 1
                     else:
@@ -211,12 +222,12 @@ class EllipsometryFitter:
                 model = 0
                 for j, param in enumerate(layer):
                     # Loop over the parameterts of the layer
-                    if param == 'width':
+                    if param == "width":
                         out.append(self.stack.widths[i])
                     # Parameters of the DielectricModel of the layer
-                    elif param == 'e_inf':
+                    elif param == "e_inf":
                         out.append(self.stack.models[i].e_inf)
-                    elif param == 'e_gap':
+                    elif param == "e_gap":
                         out.append(self.stack.models[i].e_gap)
                     else:
                         for val in param:
@@ -248,7 +259,9 @@ class EllipsometryFitter:
         :param v: The free variables to update.
         :return: The mean-squared error between the experimental data and the modelled one
         """
-        assert self.range is not None, 'Error: A wavelength range must be defined before calculating the MSE'
+        assert (
+            self.range is not None
+        ), "Error: A wavelength range must be defined before calculating the MSE"
 
         if v is not None:
             self.update_variables(v)
@@ -256,23 +269,25 @@ class EllipsometryFitter:
         else:
             num_var = 0
 
-        out = 0.
-        elements = 0.
+        out = 0.0
+        elements = 0.0
 
-        mod_data = calculate_ellipsometry(self.stack, self.range, angle=self.data.angles)
+        mod_data = calculate_ellipsometry(
+            self.stack, self.range, angle=self.data.angles
+        )
 
         for i, ang in enumerate(self.data.angles):
-            new_wl = self.data.data[ang][0] * 1000.
+            new_wl = self.data.data[ang][0] * 1000.0
             elements += len(new_wl)
-            psi = np.interp(new_wl, self.range, mod_data['psi'][:, i])
-            delta = np.interp(new_wl, self.range, mod_data['Delta'][:, i])
+            psi = np.interp(new_wl, self.range, mod_data["psi"][:, i])
+            delta = np.interp(new_wl, self.range, mod_data["Delta"][:, i])
 
             p = (self.data.data[ang][1] - psi) / self.data.data[ang][1]
             d = (self.data.data[ang][3] - delta) / self.data.data[ang][4]
 
             out += np.sum(p ** 2 + d ** 2)
 
-        out = np.sqrt(1. / (2 * elements - num_var) * out)
+        out = np.sqrt(1.0 / (2 * elements - num_var) * out)
 
         return np.array(out)
 
@@ -290,9 +305,11 @@ class EllipsometryFitter:
         def fun(x):
             return self.mse(x)
 
-        self.fit_information = minimize(fun, guess, method='BFGS', options={'gtol': 1e-02, 'disp': True})
+        self.fit_information = minimize(
+            fun, guess, method="BFGS", options={"gtol": 1e-02, "disp": True}
+        )
         self.calculate_uncertainties()
-        self.update_variables(self.fit_information['x'])
+        self.update_variables(self.fit_information["x"])
 
         if show:
             print(self.fit_information)
@@ -316,15 +333,17 @@ class EllipsometryFitter:
         :return: None
         """
 
-        C = self.fit_information['hess_inv']
-        MSE = self.fit_information['fun']
+        C = self.fit_information["hess_inv"]
+        MSE = self.fit_information["fun"]
 
         self.errors = 1.65 * np.sqrt(MSE * np.diag(C))
         self.correlations = np.zeros_like(C)
 
         for i in range(len(C[0])):
             for j in range(len(C[0])):
-                self.correlations[i, j] = C[i, j] / (np.sqrt(C[i, i]) * np.sqrt(C[j, j]))
+                self.correlations[i, j] = C[i, j] / (
+                    np.sqrt(C[i, i]) * np.sqrt(C[j, j])
+                )
 
     def plot(self, log: bool = True) -> None:
         """ Plots the expeirmental and the modelled data.
@@ -333,7 +352,9 @@ class EllipsometryFitter:
         :return: None
         """
 
-        mod_data = calculate_ellipsometry(self.stack, self.range, angle=self.data.angles)
+        mod_data = calculate_ellipsometry(
+            self.stack, self.range, angle=self.data.angles
+        )
 
         fig, ax = plt.subplots(nrows=2, ncols=1, sharex=True)
         min_wl = 0
@@ -342,71 +363,83 @@ class EllipsometryFitter:
         if log:
             for i, ang in enumerate(self.data.angles):
                 new_wl = self.data.data[ang][0]
-                if min(new_wl) > min_wl: min_wl = min(new_wl)
-                if max(new_wl) < max_wl: max_wl = max(new_wl)
+                if min(new_wl) > min_wl:
+                    min_wl = min(new_wl)
+                if max(new_wl) < max_wl:
+                    max_wl = max(new_wl)
 
-                psi = np.interp(new_wl, self.range / 1000., mod_data['psi'][:, i])
-                delta = np.interp(new_wl, self.range / 1000., mod_data['Delta'][:, i])
+                psi = np.interp(new_wl, self.range / 1000.0, mod_data["psi"][:, i])
+                delta = np.interp(new_wl, self.range / 1000.0, mod_data["Delta"][:, i])
 
-                ax[0].semilogx(new_wl, self.data.data[ang][1], 'o', mfc='none')
-                ax[1].semilogx(new_wl, self.data.data[ang][3], 'o', mfc='none')
-                ax[0].semilogx(new_wl, psi, 'r')
-                ax[1].semilogx(new_wl, delta, 'b')
+                ax[0].semilogx(new_wl, self.data.data[ang][1], "o", mfc="none")
+                ax[1].semilogx(new_wl, self.data.data[ang][3], "o", mfc="none")
+                ax[0].semilogx(new_wl, psi, "r")
+                ax[1].semilogx(new_wl, delta, "b")
 
         else:
             for i, ang in enumerate(self.data.angles):
-                new_wl = self.data.data[ang][0] * 1000.
-                if min(new_wl) > min_wl: min_wl = min(new_wl)
-                if max(new_wl) < max_wl: max_wl = max(new_wl)
+                new_wl = self.data.data[ang][0] * 1000.0
+                if min(new_wl) > min_wl:
+                    min_wl = min(new_wl)
+                if max(new_wl) < max_wl:
+                    max_wl = max(new_wl)
 
-                psi = np.interp(new_wl, self.range / 1000., mod_data['psi'][:, i])
-                delta = np.interp(new_wl, self.range / 1000., mod_data['Delta'][:, i])
+                psi = np.interp(new_wl, self.range / 1000.0, mod_data["psi"][:, i])
+                delta = np.interp(new_wl, self.range / 1000.0, mod_data["Delta"][:, i])
 
-                ax[0].plot(new_wl, self.data.data[ang][1], 'o', mfc='none')
-                ax[1].plot(new_wl, self.data.data[ang][3], 'o', mfc='none')
-                ax[0].semilogx(new_wl, psi, 'r')
-                ax[1].semilogx(new_wl, delta, 'b')
+                ax[0].plot(new_wl, self.data.data[ang][1], "o", mfc="none")
+                ax[1].plot(new_wl, self.data.data[ang][3], "o", mfc="none")
+                ax[0].semilogx(new_wl, psi, "r")
+                ax[1].semilogx(new_wl, delta, "b")
 
         ax[0].set_xlim((min_wl, max_wl))
         ax[1].set_xlim((min_wl, max_wl))
 
         x = [0.3, 0.4, 0.5, 0.7, 1, 2, 3, 4, 5, 7, 10, 20]
         plt.xticks(x, x)
-        plt.xlabel('Wavelength (µm)')
-        ax[0].set_ylabel(r'$\Psi$ (º)')
-        ax[1].set_ylabel(r'$\Delta$ (º)')
+        plt.xlabel("Wavelength (µm)")
+        ax[0].set_ylabel(r"$\Psi$ (º)")
+        ax[1].set_ylabel(r"$\Delta$ (º)")
         plt.show()
 
     def __repr__(self) -> str:
 
-        out = ''
+        out = ""
         for i, layer in enumerate(self.stack.models):
-            out += '\n LAYER {}:\n'.format(i)
-            out += 'Width:\t {} nm\n'.format(self.stack.widths[i])
+            out += "\n LAYER {}:\n".format(i)
+            out += "Width:\t {} nm\n".format(self.stack.widths[i])
             out += layer.__repr__()
-            out += '\n'
+            out += "\n"
 
         return out
 
 
-if __name__ == '__main__':
-    from solcore.absorption_calculator.dielectric_constant_models import Poles, Lorentz, Drude, Gauss, Cauchy
+if __name__ == "__main__":
+    from solcore.absorption_calculator.dielectric_constant_models import (
+        Poles,
+        Lorentz,
+        Drude,
+        Gauss,
+        Cauchy,
+    )
     from solcore.absorption_calculator import DielectricConstantModel
 
     import matplotlib.pyplot as plt
 
     # Experimental data
-    filename = '/Users/diego/Dropbox/WorkIC/Data/Imperial/RTA_samples/Ellipsometry_IR/nSi_bare.dat'
-    filename2 = '/Users/diego/Dropbox/WorkIC/Data/Imperial/RTA_samples/Ellipsometry_VIS/160920/ellipvis_nsi2.dat'
+    filename = "/Users/diego/Dropbox/WorkIC/Data/Imperial/RTA_samples/Ellipsometry_IR/nSi_bare.dat"
+    filename2 = "/Users/diego/Dropbox/WorkIC/Data/Imperial/RTA_samples/Ellipsometry_VIS/160920/ellipvis_nsi2.dat"
     data = EllipsometryData(filename)
     data.append_data(filename2)
     # data.plot()
 
     # Models
-    silicon_filename = '/Users/diego/Dropbox/WorkIC/Data/Materials_database/FTIR_mat/silicon.mat'
+    silicon_filename = (
+        "/Users/diego/Dropbox/WorkIC/Data/Materials_database/FTIR_mat/silicon.mat"
+    )
     si_data = np.loadtxt(silicon_filename, skiprows=3, unpack=True)
     si_data[0] = 1.24 / si_data[0]
-    n = np.sqrt(si_data[1] + si_data[2] * 1.j)
+    n = np.sqrt(si_data[1] + si_data[2] * 1.0j)
     si_data[1] = np.real(n)
     si_data[2] = np.imag(n)
 
@@ -414,14 +447,22 @@ if __name__ == '__main__':
     #
 
     drud = Drude(An=2.26598948, Brn=0.049)
-    model_substrate = [300, si_data[0] * 1000, si_data[1], si_data[2],
-                       DielectricConstantModel(e_inf=11.71255715, oscillators=[drud]), [2000, 500, 0]]
+    model_substrate = [
+        300,
+        si_data[0] * 1000,
+        si_data[1],
+        si_data[2],
+        DielectricConstantModel(e_inf=11.71255715, oscillators=[drud]),
+        [2000, 500, 0],
+    ]
 
-    siO2_filename = '/Users/diego/Dropbox/WorkIC/Data/Materials_database/FTIR_mat/SiO2_thermal.mat'
+    siO2_filename = (
+        "/Users/diego/Dropbox/WorkIC/Data/Materials_database/FTIR_mat/SiO2_thermal.mat"
+    )
     sio2_data = np.loadtxt(siO2_filename, skiprows=3, unpack=True)
 
     sio2_data[0] = 1.24 / sio2_data[0]
-    n = np.sqrt(sio2_data[1] + sio2_data[2] * 1.j)
+    n = np.sqrt(sio2_data[1] + sio2_data[2] * 1.0j)
     sio2_data[1] = np.real(n)
     sio2_data[2] = np.imag(n)
     model_sio2 = [1.5, sio2_data[0] * 1000, sio2_data[1], sio2_data[2]]
@@ -437,7 +478,7 @@ if __name__ == '__main__':
 
     # Fitting stuff
     fit = EllipsometryFitter(data, stack)
-    variables = [['width'], ['e_inf', ['An']]]
+    variables = [["width"], ["e_inf", ["An"]]]
     fit.set_variables(variables)
     wl = np.logspace(np.log10(300), np.log10(20000), 200)
     fit.set_range(wl)

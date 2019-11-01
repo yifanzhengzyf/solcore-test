@@ -8,7 +8,8 @@ import sqlite3
 from solcore.material_data.refractiveindex_info_DB import dboperations as DB
 from solcore import config, SOLCORE_ROOT
 
-def download_db(url = None, interpolation_points = 200, confirm = False):
+
+def download_db(url=None, interpolation_points=200, confirm=False):
     """
     This function downloads the refractiveindex.info database and creates on SQLite database at
     the path specified in the user config file.
@@ -18,13 +19,17 @@ def download_db(url = None, interpolation_points = 200, confirm = False):
     :param confirm: if True, will not ask if you want to download database again even if it has been downloaded previously
     :return:
     """
-    NK_PATH = os.path.abspath(config['Others']['nk'].replace('SOLCORE_ROOT', SOLCORE_ROOT))
+    NK_PATH = os.path.abspath(
+        config["Others"]["nk"].replace("SOLCORE_ROOT", SOLCORE_ROOT)
+    )
 
     if os.path.isfile(NK_PATH) and not confirm:
-        response = input('There is already a downloaded database file.'
-                         'Do you want to download it again (Y/n)?')
+        response = input(
+            "There is already a downloaded database file."
+            "Do you want to download it again (Y/n)?"
+        )
 
-        if response in 'Yy':
+        if response in "Yy":
             confirm = True
     else:
         confirm = True
@@ -47,17 +52,23 @@ def search_db(term="", exact=False):
     The first entry of each tuple is the pageid of the database entry.
     """
 
-    NK_PATH = os.path.abspath(config['Others']['nk'].replace('SOLCORE_ROOT', SOLCORE_ROOT))
+    NK_PATH = os.path.abspath(
+        config["Others"]["nk"].replace("SOLCORE_ROOT", SOLCORE_ROOT)
+    )
 
     db = DB.Database(NK_PATH)
     conn = sqlite3.connect(db.db_path)
     c = conn.cursor()
     if not exact:
-        c.execute('SELECT * FROM pages WHERE shelf like ? or book like ? or page like ? or filepath like ?',
-                  ["%" + term + "%" for i in range(4)])
+        c.execute(
+            "SELECT * FROM pages WHERE shelf like ? or book like ? or page like ? or filepath like ?",
+            ["%" + term + "%" for i in range(4)],
+        )
     else:
-        c.execute('SELECT * FROM pages WHERE shelf like ? or book like ? or page like ? or filepath like ?',
-                  [term for i in range(4)])
+        c.execute(
+            "SELECT * FROM pages WHERE shelf like ? or book like ? or page like ? or filepath like ?",
+            [term for i in range(4)],
+        )
     results = c.fetchall()
     if len(results) == 0:
         print("No results found.")
@@ -72,7 +83,9 @@ def search_db(term="", exact=False):
 
 
 def nkdb_load_n(pageid):
-    NK_PATH = os.path.abspath(config['Others']['nk'].replace('SOLCORE_ROOT', SOLCORE_ROOT))
+    NK_PATH = os.path.abspath(
+        config["Others"]["nk"].replace("SOLCORE_ROOT", SOLCORE_ROOT)
+    )
 
     db = DB.Database(NK_PATH)
     res = db.get_material_n_numpy(int(pageid))
@@ -82,7 +95,9 @@ def nkdb_load_n(pageid):
 
 
 def nkdb_load_k(pageid):
-    NK_PATH = os.path.abspath(config['Others']['nk'].replace('SOLCORE_ROOT', SOLCORE_ROOT))
+    NK_PATH = os.path.abspath(
+        config["Others"]["nk"].replace("SOLCORE_ROOT", SOLCORE_ROOT)
+    )
 
     db = DB.Database(NK_PATH)
     res = db.get_material_k_numpy(int(pageid))
@@ -104,7 +119,9 @@ def create_nk_txt(pageid, file, folder=""):
     :return: parameter_source: file with list of other parameters for the new material
     """
 
-    NK_PATH = os.path.abspath(config['Others']['nk'].replace('SOLCORE_ROOT', SOLCORE_ROOT))
+    NK_PATH = os.path.abspath(
+        config["Others"]["nk"].replace("SOLCORE_ROOT", SOLCORE_ROOT)
+    )
 
     db = DB.Database(NK_PATH)
     if not os.path.exists(folder) and folder != "":

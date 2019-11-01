@@ -4,7 +4,8 @@ import solcore.analytic_solar_cells as ASC
 import numpy as np
 import types
 from scipy.interpolate import interp1d
-#import matplotlib.pyplot as plt
+
+# import matplotlib.pyplot as plt
 
 
 def solve_beer_lambert(solar_cell, options):
@@ -20,13 +21,13 @@ def solve_beer_lambert(solar_cell, options):
     fraction = np.ones(wl_m.shape)
 
     # We include the shadowing losses
-    if hasattr(solar_cell, 'shading'):
-        fraction *= (1 - solar_cell.shading)
+    if hasattr(solar_cell, "shading"):
+        fraction *= 1 - solar_cell.shading
 
     # And the reflexion losses
-    if hasattr(solar_cell, 'reflectivity') and solar_cell.reflectivity is not None:
+    if hasattr(solar_cell, "reflectivity") and solar_cell.reflectivity is not None:
         solar_cell.reflected = solar_cell.reflectivity(wl_m)
-        fraction *= (1 - solar_cell.reflected)
+        fraction *= 1 - solar_cell.reflected
     else:
         solar_cell.reflected = np.zeros(fraction.shape)
 
@@ -49,21 +50,27 @@ def solve_beer_lambert(solar_cell, options):
         # For each junction, and layer within the junction, we get the absorption coeficient and the layer width.
         elif type(layer_object) is Junction:
 
-            kind = solar_cell[j].kind if hasattr(solar_cell[j], 'kind') else None
+            kind = solar_cell[j].kind if hasattr(solar_cell[j], "kind") else None
 
-            if kind == '2D':
+            if kind == "2D":
                 # If the junction has a Jsc or EQE already defined, we ignore that junction in the optical calculation
-                if hasattr(solar_cell[j], 'jsc') or hasattr(solar_cell[j], 'eqe'):
-                    print('Warning: A junction of kind "2D" found. Junction ignored in the optics calculation!')
+                if hasattr(solar_cell[j], "jsc") or hasattr(solar_cell[j], "eqe"):
+                    print(
+                        'Warning: A junction of kind "2D" found. Junction ignored in the optics calculation!'
+                    )
 
                     w = layer_object.width
 
                     def alf(x):
-                        return 0.0*x
+                        return 0.0 * x
 
                     solar_cell[j].alpha = alf
-                    solar_cell[j].reflected = interp1d(wl_m, solar_cell.reflected, bounds_error=False,
-                                                       fill_value=(0, 0))
+                    solar_cell[j].reflected = interp1d(
+                        wl_m,
+                        solar_cell.reflected,
+                        bounds_error=False,
+                        fill_value=(0, 0),
+                    )
 
                     widths.append(w)
                     alphas.append(alf(wl_m))
@@ -74,24 +81,38 @@ def solve_beer_lambert(solar_cell, options):
                     w = layer_object.width
 
                     def alf(x):
-                        return -1 / w * np.log(np.maximum(1 - layer_object.absorptance(x), 1e-3))
+                        return (
+                            -1
+                            / w
+                            * np.log(np.maximum(1 - layer_object.absorptance(x), 1e-3))
+                        )
 
                     solar_cell[j].alpha = alf
-                    solar_cell[j].reflected = interp1d(wl_m, solar_cell.reflected, bounds_error=False,
-                                                       fill_value=(0, 0))
+                    solar_cell[j].reflected = interp1d(
+                        wl_m,
+                        solar_cell.reflected,
+                        bounds_error=False,
+                        fill_value=(0, 0),
+                    )
 
                     widths.append(w)
                     alphas.append(alf(wl_m))
 
-            elif kind == 'DB':
+            elif kind == "DB":
                 ASC.absorptance_detailed_balance(solar_cell[j])
                 w = layer_object.width
 
                 def alf(x):
-                    return -1 / w * np.log(np.maximum(1 - layer_object.absorptance(x), 1e-3))
+                    return (
+                        -1
+                        / w
+                        * np.log(np.maximum(1 - layer_object.absorptance(x), 1e-3))
+                    )
 
                 solar_cell[j].alpha = alf
-                solar_cell[j].reflected = interp1d(wl_m, solar_cell.reflected, bounds_error=False, fill_value=(0, 0))
+                solar_cell[j].reflected = interp1d(
+                    wl_m, solar_cell.reflected, bounds_error=False, fill_value=(0, 0)
+                )
 
                 widths.append(w)
                 alphas.append(alf(wl_m))
@@ -102,7 +123,9 @@ def solve_beer_lambert(solar_cell, options):
                     alphas.append(layer.material.alpha(wl_m))
 
     # With all this information, we are ready to calculate the absorbed light
-    diff_absorption, transmitted, all_absorbed = calculate_absorption_beer_lambert(widths, alphas, fraction)
+    diff_absorption, transmitted, all_absorbed = calculate_absorption_beer_lambert(
+        widths, alphas, fraction
+    )
 
     # Each building block (layer or junction) needs to have access to the absorbed light in its region.
     # We update each object with that information.
@@ -112,10 +135,14 @@ def solve_beer_lambert(solar_cell, options):
         solar_cell[j].absorbed = types.MethodType(absorbed, solar_cell[j])
 
         # total absorption at each wavelength, per layer
-        layer_positions = options.position[(options.position >= solar_cell[j].offset) & (
-                options.position < solar_cell[j].offset + solar_cell[j].width)]
+        layer_positions = options.position[
+            (options.position >= solar_cell[j].offset)
+            & (options.position < solar_cell[j].offset + solar_cell[j].width)
+        ]
         layer_positions = layer_positions - np.min(layer_positions)
-        solar_cell[j].layer_absorption = np.trapz(solar_cell[j].absorbed(layer_positions), layer_positions, axis=0)
+        solar_cell[j].layer_absorption = np.trapz(
+            solar_cell[j].absorbed(layer_positions), layer_positions, axis=0
+        )
 
     solar_cell.transmitted = transmitted
     solar_cell.absorbed = all_absorbed

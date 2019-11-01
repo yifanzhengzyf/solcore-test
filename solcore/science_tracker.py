@@ -46,7 +46,9 @@ def science_reference(short_purpose: str, reference: str) -> None:
         bibliography.append(reference)
         add_anyway = True
     if track_each_reference_call or add_anyway:
-        science_tracking.append((call_record, short_purpose, bibliography_id.index(identifier) + 1))
+        science_tracking.append(
+            (call_record, short_purpose, bibliography_id.index(identifier) + 1)
+        )
 
 
 def print_references() -> None:
@@ -54,8 +56,10 @@ def print_references() -> None:
     global bibliography, bibliography_id, science_tracking, track_each_reference_call
 
     "List of references encountered while executing"
-    if not track_each_reference_call: print(
-        "showing first call only - override with solcore.track_science(track_each_call=True)")
+    if not track_each_reference_call:
+        print(
+            "showing first call only - override with solcore.track_science(track_each_call=True)"
+        )
 
     for record, purpose, index in science_tracking:
         print("[{}] {} - {}".format(index, purpose, record))
@@ -73,15 +77,14 @@ def track_science(track_each_call: bool = False):
 
 
 if __name__ == "__main__":
+
     def myRandomFunctionA() -> None:
         myRandomFunctionB(d=1)
-
 
     def myRandomFunctionB(d) -> None:
         a = 1
 
         science_reference("doing something smart", "My Awesome Book, by me.")
-
 
     track_science()
     myRandomFunctionA()

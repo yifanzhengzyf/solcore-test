@@ -15,25 +15,39 @@ from solcore.quantum_mechanics.kp_bulk import kp8x8_bulk
 m0 = electron_mass
 
 
-def assemble_qw_structure(repeats, well, bulk_l_top, bulk_l_bottom, barrier, well_interlayer=None,
-                          structure_label="QW Structure", shift_wells=0):
+def assemble_qw_structure(
+    repeats,
+    well,
+    bulk_l_top,
+    bulk_l_bottom,
+    barrier,
+    well_interlayer=None,
+    structure_label="QW Structure",
+    shift_wells=0,
+):
     half_barrier = Layer(barrier.width / 2, barrier.material)
     qw_structure = Structure()
     # qw_structure.append(bulk, layer_label="bulk")
     qw_structure.append_multiple([bulk_l_top], layer_labels=["bulk"])
     qw_structure.append_multiple([half_barrier], layer_labels=["half barrier"])
     if well_interlayer:
-        qw_structure.append_multiple([well_interlayer, well, well_interlayer, barrier], layer_labels=["interlayer",
-                                                                                                      "well",
-                                                                                                      "interlayer",
-                                                                                                      "barrier"],
-                                     repeats=repeats - 1)
-        qw_structure.append_multiple([well_interlayer, well, well_interlayer, half_barrier, bulk_l_bottom],
-                                     layer_labels=[
-                                         "interlayer", "well", "interlayer", "half barrier", "bulk"])
+        qw_structure.append_multiple(
+            [well_interlayer, well, well_interlayer, barrier],
+            layer_labels=["interlayer", "well", "interlayer", "barrier"],
+            repeats=repeats - 1,
+        )
+        qw_structure.append_multiple(
+            [well_interlayer, well, well_interlayer, half_barrier, bulk_l_bottom],
+            layer_labels=["interlayer", "well", "interlayer", "half barrier", "bulk"],
+        )
     else:
-        qw_structure.append_multiple([well, barrier], layer_labels=["well", "barrier"], repeats=repeats - 1)
-        qw_structure.append_multiple([well, half_barrier, bulk_l_bottom], layer_labels=["well", "half barrier", "bulk"])
+        qw_structure.append_multiple(
+            [well, barrier], layer_labels=["well", "barrier"], repeats=repeats - 1
+        )
+        qw_structure.append_multiple(
+            [well, half_barrier, bulk_l_bottom],
+            layer_labels=["well", "half barrier", "bulk"],
+        )
 
     return qw_structure
 
@@ -46,7 +60,7 @@ def vary_well_widths(structure, fraction=0.5, region_sought="well"):
         if label != region_sought:
             continue
 
-        layer.width *= (1 + (2 * random() - 1) * fraction)
+        layer.width *= 1 + (2 * random() - 1) * fraction
         print(layer.width)
     return structure
 
@@ -55,13 +69,22 @@ def locate_regions(x, structure, region_sought="well"):
     """Returns an array of indices which correspond to the region that are quantum wells in the structure."""
     depth = 0
 
-    well_structure_indices = set([item for item in range(
-        len(structure.labels)) if structure.labels[
-                                      item] == region_sought])  # <---- Uses new labels in the structure object
+    well_structure_indices = set(
+        [
+            item
+            for item in range(len(structure.labels))
+            if structure.labels[item] == region_sought
+        ]
+    )  # <---- Uses new labels in the structure object
     well_z_indices = np.array([], dtype=np.dtype(int))
     for i, layer in enumerate(structure):
         if well_structure_indices.issuperset([i]):
-            well_z_indices = np.hstack((well_z_indices, np.where((depth <= x) * (x <= depth + layer.width) == True)[0]))
+            well_z_indices = np.hstack(
+                (
+                    well_z_indices,
+                    np.where((depth <= x) * (x <= depth + layer.width) == True)[0],
+                )
+            )
         depth += layer.width
     return well_z_indices
 
@@ -73,18 +96,38 @@ def well_regions(x, structure):
 def text_render(structure, resolution=100):
     x = np.linspace(0, structure.width(), resolution)
     bulk = locate_regions(x, structure, "bulk")
-    barrier = set(locate_regions(x, structure, "barrier")) | set(locate_regions(x, structure, "half barrier"))
+    barrier = set(locate_regions(x, structure, "barrier")) | set(
+        locate_regions(x, structure, "half barrier")
+    )
     interlayer = locate_regions(x, structure, "interlayer")
     well = locate_regions(x, structure, "well")
 
-    chars = ["―" if i in bulk else "_" if i in well else "-" if i in interlayer else "‾" if i in barrier else "?" for i
-             in range(resolution)]
-    return ("".join(chars))
+    chars = [
+        "―"
+        if i in bulk
+        else "_"
+        if i in well
+        else "-"
+        if i in interlayer
+        else "‾"
+        if i in barrier
+        else "?"
+        for i in range(resolution)
+    ]
+    return "".join(chars)
 
 
-def structure_to_potentials(structure, step_size=None, minimum_step_size=0, smallest_feature_steps=20,
-                            blur=False, blurmode="even", return_qw_boolean_for_layer=False, Efield=0,
-                            mode='kp4x4'):
+def structure_to_potentials(
+    structure,
+    step_size=None,
+    minimum_step_size=0,
+    smallest_feature_steps=20,
+    blur=False,
+    blurmode="even",
+    return_qw_boolean_for_layer=False,
+    Efield=0,
+    mode="kp4x4",
+):
     """ Discretizes the structure as a function of the position, providing the potential for the electrons, HH, LH and
     SO bands as well as the Luttinger parameters and the effective masses.
 
@@ -105,9 +148,10 @@ def structure_to_potentials(structure, step_size=None, minimum_step_size=0, smal
     # We calculate the mesh based on the minimum feature of the structure and the number of points desired for that
     # feature
 
-    available_modes = ['kp6x6', 'kp4x4', 'kp8x8_bulk', 'strain', 'relaxed']
-    assert mode in available_modes, 'ERROR: Calculation mode must be {}'.format(available_modes)
-
+    available_modes = ["kp6x6", "kp4x4", "kp8x8_bulk", "strain", "relaxed"]
+    assert mode in available_modes, "ERROR: Calculation mode must be {}".format(
+        available_modes
+    )
 
     widths = [layer.width for layer in structure]
     total_width = sum(widths)
@@ -144,13 +188,13 @@ def structure_to_potentials(structure, step_size=None, minimum_step_size=0, smal
         g1[positions] = layer.material.get("gamma1")
         g2[positions] = layer.material.get("gamma2")
         g3[positions] = layer.material.get("gamma3")
-        mhh_p[positions] = 1. / (g1[positions] - 2 * g2[positions]) * m0
-        mhh_t[positions] = 1. / (g1[positions] + 2 * g2[positions]) * m0
-        mlh_p[positions] = 1. / (g1[positions] + g2[positions]) * m0
-        mlh_t[positions] = 1. / (g1[positions] - g2[positions]) * m0
+        mhh_p[positions] = 1.0 / (g1[positions] - 2 * g2[positions]) * m0
+        mhh_t[positions] = 1.0 / (g1[positions] + 2 * g2[positions]) * m0
+        mlh_p[positions] = 1.0 / (g1[positions] + g2[positions]) * m0
+        mlh_t[positions] = 1.0 / (g1[positions] - g2[positions]) * m0
 
         if return_qw_boolean_for_layer:
-            isWell[positions] = (layer == return_qw_boolean_for_layer)
+            isWell[positions] = layer == return_qw_boolean_for_layer
 
         try:
             Ve[positions] = layer.Ec
@@ -159,10 +203,14 @@ def structure_to_potentials(structure, step_size=None, minimum_step_size=0, smal
             Vso[positions] = layer.Ev - layer.material.spin_orbit_splitting
 
         except KeyError:
-            print("There was a problem converting the structure to a potential because some information was missing "
-                  "from the structure state.")
-            print("Try calling the function 'align_heterostructure_using_Vurgaftman' before calling "
-                  "'structure_to_potentials'.")
+            print(
+                "There was a problem converting the structure to a potential because some information was missing "
+                "from the structure state."
+            )
+            print(
+                "Try calling the function 'align_heterostructure_using_Vurgaftman' before calling "
+                "'structure_to_potentials'."
+            )
             sys.exit()
 
         except Exception as inst:
@@ -177,10 +225,11 @@ def structure_to_potentials(structure, step_size=None, minimum_step_size=0, smal
         # - kp8x8_bulk, calculates the four bands and fit the effective masses with a parabola around k=0
         # - strain, just shifts the bands according to the strain
         # - relaxed, do nothing and things are calculated as if we had the bulk, unstrained materials
-        if mode == 'kp6x6':
+        if mode == "kp6x6":
             # The band edges are shifted and the effective mass of the LHs also changes.
-            c, hh, lh, so, mc_kp, mhh_p_kp, mlh_p_kp, mso_p_kp, mhh_t_kp, mlh_t_kp, mso_t_kp = kp6x6(layer.material,
-                                                                                                         substrate)
+            c, hh, lh, so, mc_kp, mhh_p_kp, mlh_p_kp, mso_p_kp, mhh_t_kp, mlh_t_kp, mso_t_kp = kp6x6(
+                layer.material, substrate
+            )
 
             mlh_p[positions] = mlh_p_kp
             mlh_t[positions] = mlh_t_kp
@@ -190,15 +239,17 @@ def structure_to_potentials(structure, step_size=None, minimum_step_size=0, smal
             Vlh[positions] = lh
             Vso[positions] = so
 
-        elif mode == 'kp4x4':
+        elif mode == "kp4x4":
             # The band edges are shifted but the effective masses around k=0 are not affected.
-            c, hh, lh, mc_kp, mhh_p_kp, mlh_p_kp, mhh_t_kp, mlh_t_kp = kp4x4(layer.material, substrate)
+            c, hh, lh, mc_kp, mhh_p_kp, mlh_p_kp, mhh_t_kp, mlh_t_kp = kp4x4(
+                layer.material, substrate
+            )
 
             Ve[positions] = c
             Vhh[positions] = hh
             Vlh[positions] = lh
 
-        elif mode == 'kp8x8_bulk':
+        elif mode == "kp8x8_bulk":
             # The band edges and the effective mass of Electrons, HH, LH and the SO holes changes.
             c, hh, lh, so, mc, mhh, mlh, mso = kp8x8_bulk(layer.material, substrate)
 
@@ -213,9 +264,11 @@ def structure_to_potentials(structure, step_size=None, minimum_step_size=0, smal
             Vlh[positions] = lh
             Vso[positions] = so
 
-        elif mode == 'strain':
+        elif mode == "strain":
             # The bands are just shifted according to strain
-            strain_parameters = strain_calculation_parameters(substrate, layer.material, SO=True)
+            strain_parameters = strain_calculation_parameters(
+                substrate, layer.material, SO=True
+            )
             Ve[positions] = Ve[positions] + strain_parameters.delta_Ec
             Vhh[positions] = Vhh[positions] + strain_parameters.delta_Ehh
             Vlh[positions] = Vlh[positions] + strain_parameters.delta_Elh
@@ -249,35 +302,38 @@ def structure_to_potentials(structure, step_size=None, minimum_step_size=0, smal
         Vlh = Vlh + q * x * Efield
         Vso = Vso + q * x * Efield
 
-    if mode in ['kp4x4', 'strain', 'relaxed']:
+    if mode in ["kp4x4", "strain", "relaxed"]:
         Vso = Vso * 0
 
-
-    if mode in ['kp4x4', 'kp6x6']:
-        return {"x": x,
-                "Ve": Ve,
-                "me": me,
-                "Vhh": Vhh,
-                "g1": g1,
-                "Vlh": Vlh,
-                "g2": g2,
-                "Vso": Vso,
-                "g3": g3,
-                "isWell": isWell,
-                "mhh_p": mhh_p,
-                "mhh_t": mhh_t,
-                "mlh_p": mlh_p,
-                "mlh_t": mlh_t}
+    if mode in ["kp4x4", "kp6x6"]:
+        return {
+            "x": x,
+            "Ve": Ve,
+            "me": me,
+            "Vhh": Vhh,
+            "g1": g1,
+            "Vlh": Vlh,
+            "g2": g2,
+            "Vso": Vso,
+            "g3": g3,
+            "isWell": isWell,
+            "mhh_p": mhh_p,
+            "mhh_t": mhh_t,
+            "mlh_p": mlh_p,
+            "mlh_t": mlh_t,
+        }
     else:
-        return {"x": x,
-                "Ve": Ve,
-                "me": me,
-                "Vhh": Vhh,
-                "Vlh": Vlh,
-                "Vso": Vso,
-                "isWell": isWell,
-                "mhh": mhh_p,
-                "mlh": mlh_p}
+        return {
+            "x": x,
+            "Ve": Ve,
+            "me": me,
+            "Vhh": Vhh,
+            "Vlh": Vlh,
+            "Vso": Vso,
+            "isWell": isWell,
+            "mhh": mhh_p,
+            "mlh": mlh_p,
+        }
 
 
 if __name__ == "__main__":
@@ -311,7 +367,7 @@ if __name__ == "__main__":
     test_structure.substrate = bulk
 
     VBO_align(test_structure)
-    result = structure_to_potentials(test_structure, mode='kp8x8_bulk')
+    result = structure_to_potentials(test_structure, mode="kp8x8_bulk")
     print(test_structure)
 
     # plt.plot(result['x']*1e9, result['Ve']/q, result['x']*1e9, result['Vhh']/q, result['x']*1e9, result['Vlh']/q, result['x']*1e9, result['Vso']/q)

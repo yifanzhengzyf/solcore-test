@@ -19,20 +19,22 @@ class WrongDimensionError(Exception):
         BaseException.__init__(self, msg)
 
 
-def generateConversionDictForSISuffix(suffix, centi=False, deci=False, non_base_si_factor=1):
+def generateConversionDictForSISuffix(
+    suffix, centi=False, deci=False, non_base_si_factor=1
+):
     prefixes = "Y,Z,E,P,T,G,M,k,,m,u,n,p,f,a,z,y".split(",")
     exponents = list(range(8, -9, -1))
 
     if centi:
         prefixes.append("c")
-        exponents.append(-2. / 3.)
+        exponents.append(-2.0 / 3.0)
 
     if deci:
         prefixes.append("d")
-        exponents.append(-1. / 3.)
+        exponents.append(-1.0 / 3.0)
 
     unitNames = ["%s%s" % (prefix, suffix) for prefix in prefixes]
-    conversion = [1000. ** exponent * non_base_si_factor for exponent in exponents]
+    conversion = [1000.0 ** exponent * non_base_si_factor for exponent in exponents]
 
     return dict(zip(unitNames, conversion))
 
@@ -43,13 +45,20 @@ class UnitsSystem(SourceManagedClass):
 
     def __init__(self, sources=None):
         SourceManagedClass.__init__(self)
-        self.separate_value_and_unit_RE = re.compile(u"([-+]?[0-9]*\.?[0-9]+(?:[eE][-+]?[0-9]+)?)(?:[ \t]*(.*))?")
-        self.split_units_RE = re.compile(u"(?:([^ \+\-\^\.0-9]+)[\^]?([\-\+]?[^ \-\+]*)?)")
+        self.separate_value_and_unit_RE = re.compile(
+            u"([-+]?[0-9]*\.?[0-9]+(?:[eE][-+]?[0-9]+)?)(?:[ \t]*(.*))?"
+        )
+        self.split_units_RE = re.compile(
+            u"(?:([^ \+\-\^\.0-9]+)[\^]?([\-\+]?[^ \-\+]*)?)"
+        )
         self.siConversions = {}
         self.dimensions = defaultdict(dict)
 
         for name, path in sources.items():
-            self.add_source(name, os.path.abspath(path.replace('SOLCORE_ROOT', solcore.SOLCORE_ROOT)))
+            self.add_source(
+                name,
+                os.path.abspath(path.replace("SOLCORE_ROOT", solcore.SOLCORE_ROOT)),
+            )
 
         self.read()
 
@@ -65,12 +74,16 @@ class UnitsSystem(SourceManagedClass):
                     si_base_unit = expression.split()[0]
                     centi = "centi" in expression
                     deci = "deci" in expression
-                    non_base_si_factor = self.safe_eval(expression.split()[1]) if "altbase" in expression else 1
+                    non_base_si_factor = (
+                        self.safe_eval(expression.split()[1])
+                        if "altbase" in expression
+                        else 1
+                    )
                     dimension_conversions = generateConversionDictForSISuffix(
                         si_base_unit,
                         centi=centi,
                         deci=deci,
-                        non_base_si_factor=non_base_si_factor
+                        non_base_si_factor=non_base_si_factor,
                     )
                     self.siConversions.update(dimension_conversions)
                     self.dimensions[dimension].update(dimension_conversions)
@@ -80,7 +93,9 @@ class UnitsSystem(SourceManagedClass):
                 self.dimensions[dimension][unit] = self.siConversions[unit]
 
     def safe_eval(self, string_expression):
-        return eval(string_expression, {"__builtins__": {}}, {"constants": solcore.constants})
+        return eval(
+            string_expression, {"__builtins__": {}}, {"constants": solcore.constants}
+        )
 
     def siUnits(self, value, unit):
         """ Convert value from unit to equivalent si-unit
@@ -99,9 +114,10 @@ class UnitsSystem(SourceManagedClass):
 
         units_list = self.split_units_RE.findall(unit)
         for unit, power in units_list:
-            power = float(power) if power != '' else 1
-            value = value * np.power((self.siConversions[unit]),
-                                     power)  ### caution, *= is WRONG because it modifies original obj. DO NOT WANT
+            power = float(power) if power != "" else 1
+            value = value * np.power(
+                (self.siConversions[unit]), power
+            )  ### caution, *= is WRONG because it modifies original obj. DO NOT WANT
 
         return value
 
@@ -121,8 +137,10 @@ class UnitsSystem(SourceManagedClass):
 
         units_list = self.split_units_RE.findall(unit)
         for unit, power in units_list:
-            power = float(power) if power != '' else 1
-            value = value / (self.siConversions[unit]) ** power  ### caution, /= is WRONG because it modifies original obj. DO NOT WANT
+            power = float(power) if power != "" else 1
+            value = (
+                value / (self.siConversions[unit]) ** power
+            )  ### caution, /= is WRONG because it modifies original obj. DO NOT WANT
 
         return value
 
@@ -153,7 +171,7 @@ class UnitsSystem(SourceManagedClass):
         value = float(value)
         units_list = self.split_units_RE.findall(unit)
         for unit, power in units_list:
-            power = float(power) if power != '' else 1
+            power = float(power) if power != "" else 1
             value *= (self.siConversions[unit]) ** power
         return value
 
@@ -262,7 +280,9 @@ class UnitsSystem(SourceManagedClass):
         x_prime = self.eVnm(x)
         conversion_constant = self.asUnit(h, "eV s") * self.asUnit(c, "nm s-1")
         y_prime = y * conversion_constant / x_prime ** 2
-        y_prime = reverse(y_prime)  # Wavelength ascends as electronvolts decends therefore reverse arrays
+        y_prime = reverse(
+            y_prime
+        )  # Wavelength ascends as electronvolts decends therefore reverse arrays
         x_prime = reverse(x_prime)
         return (x_prime, y_prime)
 
@@ -303,7 +323,9 @@ class UnitsSystem(SourceManagedClass):
         x_prime = self.nmHz(x)
         conversion_constant = self.asUnit(c, "nm s-1")
         y_prime = y * conversion_constant / x_prime ** 2
-        y_prime = reverse(y_prime)  # Wavelength ascends as frequency decends therefore reverse arrays
+        y_prime = reverse(
+            y_prime
+        )  # Wavelength ascends as frequency decends therefore reverse arrays
         x_prime = reverse(x_prime)
         return (x_prime, y_prime)
 
@@ -356,19 +378,35 @@ class UnitsSystem(SourceManagedClass):
         :param unit: the unit.
         :return: None
         """
-        possibilities = [key for key in self.dimensions.keys() if unit in self.dimensions[key]]
+        possibilities = [
+            key for key in self.dimensions.keys() if unit in self.dimensions[key]
+        ]
 
-        assert len(possibilities) != 0, "Guessing dimension of '%s': No candidates found" % unit
-        assert len(
-            possibilities) == 1, "Guessing dimension of '%s': Multiple candidates found, please convert manually. (%s)" % (
-            unit, ", ".join(possibilities))
+        assert len(possibilities) != 0, (
+            "Guessing dimension of '%s': No candidates found" % unit
+        )
+        assert len(possibilities) == 1, (
+            "Guessing dimension of '%s': Multiple candidates found, please convert manually. (%s)"
+            % (unit, ", ".join(possibilities))
+        )
 
         return possibilities[0]
 
     def list_dimensions(self):
         for dim in self.dimensions.keys():
             print(
-                "%s: %s" % (dim, ", ".join([k for k in self.dimensions[dim].keys() if k is not None and k is not ""])))
+                "%s: %s"
+                % (
+                    dim,
+                    ", ".join(
+                        [
+                            k
+                            for k in self.dimensions[dim].keys()
+                            if k is not None and k is not ""
+                        ]
+                    ),
+                )
+            )
 
 
 def compare_floats(a, b, absoulte_precision=1e-12, relative_precision=None):
@@ -394,7 +432,7 @@ def compare_floats(a, b, absoulte_precision=1e-12, relative_precision=None):
         else:
             return False
     else:
-        relative = max(a, b) / min(a, b) - 1.
+        relative = max(a, b) / min(a, b) - 1.0
         if relative < relative_precision:
             return True
         else:
@@ -417,7 +455,7 @@ def reverse(x):
     return x[::-1]
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     UnitsSystem()
 
     print(solcore.eVnm(1240))

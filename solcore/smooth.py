@@ -1,8 +1,9 @@
 import numpy as np
 
 
-def smooth(x: np.ndarray, window_len: int, window: str = 'hanning',
-           blurmode: str = "even") -> np.ndarray:
+def smooth(
+    x: np.ndarray, window_len: int, window: str = "hanning", blurmode: str = "even"
+) -> np.ndarray:
     """smooth the data using a window with requested size.
 
     This method is based on the convolution of a scaled window with the signal.
@@ -42,21 +43,23 @@ def smooth(x: np.ndarray, window_len: int, window: str = 'hanning',
     if window_len < 3:
         return x
 
-    if not window in ['flat', 'hanning', 'hamming', 'bartlett', 'blackman']:
-        raise ValueError("Window should be one of 'flat', 'hanning', 'hamming', 'bartlett', 'blackman'")
+    if not window in ["flat", "hanning", "hamming", "bartlett", "blackman"]:
+        raise ValueError(
+            "Window should be one of 'flat', 'hanning', 'hamming', 'bartlett', 'blackman'"
+        )
 
-    s = np.r_[2 * x[0] - x[window_len - 1::-1], x, 2 * x[-1] - x[-1:-window_len:-1]]
+    s = np.r_[2 * x[0] - x[window_len - 1 :: -1], x, 2 * x[-1] - x[-1:-window_len:-1]]
 
     # print(len(s))
-    if window == 'flat':  # moving average
-        w = np.ones(window_len, 'd')
+    if window == "flat":  # moving average
+        w = np.ones(window_len, "d")
     else:
-        w = eval('numpy.' + window + '(window_len)')
+        w = eval("numpy." + window + "(window_len)")
 
     if blurmode == "right":
-        w = w[:len(w) / 2]
+        w = w[: len(w) / 2]
     elif blurmode == "left":
-        w = w[len(w) / 2:]
+        w = w[len(w) / 2 :]
 
-    y = np.convolve(w / w.sum(), s, mode='same')
-    return y[window_len:-window_len + 1]
+    y = np.convolve(w / w.sum(), s, mode="same")
+    return y[window_len : -window_len + 1]

@@ -74,7 +74,7 @@ install_requires = [
     "pyyaml",
 ]
 tests_require = ["pytest", "pytest-cov", "pytest-mock"]
-extras_require = {"dev": tests_require + ["Sphinx", "pre-commit"]}
+extras_require = {"dev": tests_require + ["Sphinx", "pre-commit", "r2t2"]}
 
 
 setup(

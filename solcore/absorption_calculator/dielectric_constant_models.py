@@ -23,10 +23,11 @@ class Poles:
     It is equivalent to Pol.2 in WVASE
 
     """
-    name = 'poles'
+
+    name = "poles"
     var = 2
 
-    def __init__(self, A=0., Ec=5.):
+    def __init__(self, A=0.0, Ec=5.0):
         """ Constructor of the pole oscillator. By default, the amplitudes are set to zero meaning that there are
         no poles.
 
@@ -48,7 +49,9 @@ class Poles:
         return self.A * self.Ec ** 2 / (self.Ec ** 2 - x_eV ** 2)
 
     def __repr__(self):
-        out = 'Poles oscillator with:\n\t- An = {}\n\t- En = {} eV\n'.format(self.A, self.Ec)
+        out = "Poles oscillator with:\n\t- An = {}\n\t- En = {} eV\n".format(
+            self.A, self.Ec
+        )
 
         return out
 
@@ -67,10 +70,11 @@ class Lorentz:
     It is equivalent to Lor.2 in WVASE.
 
     """
-    name = 'lorentz'
+
+    name = "lorentz"
     var = 3
 
-    def __init__(self, An=0., En=2., Brn=0.1):
+    def __init__(self, An=0.0, En=2.0, Brn=0.1):
         """ Constructor of the Lorentz oscillator. By default, the amplitude and broadening are set to zero meaning
         that there are no oscillator.
 
@@ -91,11 +95,14 @@ class Lorentz:
         :return: The dielectric constant at this spectral position
         """
         x_eV = 1240 / x
-        return self.An * self.En ** 2 / (self.En ** 2 - x_eV ** 2 - 1.j * self.Brn * x_eV)
+        return (
+            self.An * self.En ** 2 / (self.En ** 2 - x_eV ** 2 - 1.0j * self.Brn * x_eV)
+        )
 
     def __repr__(self):
-        out = 'Lorentz oscillator with:\n\t- An = {}\n\t- En = {} eV\n\t- Brn = {} eV\n'.format(self.An, self.En,
-                                                                                                self.Brn)
+        out = "Lorentz oscillator with:\n\t- An = {}\n\t- En = {} eV\n\t- Brn = {} eV\n".format(
+            self.An, self.En, self.Brn
+        )
 
         return out
 
@@ -118,10 +125,11 @@ class Gauss:
     It is equivalent to Gau.0 in WVASE.
 
     """
-    name = 'gauss'
+
+    name = "gauss"
     var = 3
 
-    def __init__(self, A=0., Ec=2., Br=0.1):
+    def __init__(self, A=0.0, Ec=2.0, Br=0.1):
         """ Constructor of the Gauss oscillator. By default, the amplitude and broadening are set to zero meaning
         that there are no oscillator.
 
@@ -144,17 +152,21 @@ class Gauss:
         x_eV = 1240 / x
         s = 0.5 * self.Br / np.sqrt(np.log(2))
 
-        epsi2 = lambda xx: self.A * (np.exp(-((xx - self.Ec) / s) ** 2) - np.exp(-((xx + self.Ec) / s) ** 2))
+        epsi2 = lambda xx: self.A * (
+            np.exp(-((xx - self.Ec) / s) ** 2) - np.exp(-((xx + self.Ec) / s) ** 2)
+        )
 
         epsi1 = Epsi1(epsi2)
 
         e1 = epsi1(x_eV)
         e2 = epsi2(x_eV)
 
-        return e1 + 1.j * e2
+        return e1 + 1.0j * e2
 
     def __repr__(self):
-        out = 'Gauss oscillator with:\n\t- A = {}\n\t- Ec = {} eV\n\t- Br = {} eV\n'.format(self.A, self.Ec, self.Br)
+        out = "Gauss oscillator with:\n\t- A = {}\n\t- Ec = {} eV\n\t- Br = {} eV\n".format(
+            self.A, self.Ec, self.Br
+        )
 
         return out
 
@@ -173,10 +185,11 @@ class Drude:
     It is equivalent to Drd.0 in WVASE.
 
     """
-    name = 'drude'
+
+    name = "drude"
     var = 2
 
-    def __init__(self, An=0., Brn=0.1):
+    def __init__(self, An=0.0, Brn=0.1):
         """ Constructor of the Drude oscillator. By default, the amplitude is set to zero meaning that there are no
         oscillator.
 
@@ -195,12 +208,14 @@ class Drude:
         :return: The dielectric constant at this spectral position
         """
         x_eV = 1240 / x
-        epsi = - self.An * self.Brn / (x_eV ** 2 + 1.j * self.Brn * x_eV)
+        epsi = -self.An * self.Brn / (x_eV ** 2 + 1.0j * self.Brn * x_eV)
 
         return epsi
 
     def __repr__(self):
-        out = 'Drude oscillator with:\n\t- An = {} eV\n\t- Brn = {} eV\n'.format(self.An, self.Brn)
+        out = "Drude oscillator with:\n\t- An = {} eV\n\t- Brn = {} eV\n".format(
+            self.An, self.Brn
+        )
 
         return out
 
@@ -224,10 +239,11 @@ class Cauchy:
     It is equivalent to Chy.0 in WVASE.
 
     """
-    name = 'cauchy'
+
+    name = "cauchy"
     var = 5
 
-    def __init__(self, An=0., Bn=0., Cn=0., Ak=0., Bk=0., Ck=0):
+    def __init__(self, An=0.0, Bn=0.0, Cn=0.0, Ak=0.0, Bk=0.0, Ck=0):
         """ Constructor of the Cauchy oscillator.
 
         :param An: 1st Cauchy coefficient (dimensionless)
@@ -254,14 +270,18 @@ class Cauchy:
         """
         x_eV = 1240 / x
 
-        N = self.An + self.Bn / (x / 1000.) ** 2 + self.Cn * (x / 1000.) ** 4
+        N = self.An + self.Bn / (x / 1000.0) ** 2 + self.Cn * (x / 1000.0) ** 4
         K = self.Ak * np.exp(self.Bk * (x_eV - self.Ck))
 
-        return (N + 1.j * K) ** 2
+        return (N + 1.0j * K) ** 2
 
     def __repr__(self):
-        out = 'Cauchy oscillator with:\n\t- An = {}\n\t- Bn = {} µm-2\n\t- Cn = {} µm-4\n\t- Ak = {}\n\t' \
-              '- Bk = {} eV-1\n\t- Ck = {} eV\n'.format(self.An, self.Bn, self.Cn, self.Ak, self.Bk, self.Ck)
+        out = (
+            "Cauchy oscillator with:\n\t- An = {}\n\t- Bn = {} µm-2\n\t- Cn = {} µm-4\n\t- Ak = {}\n\t"
+            "- Bk = {} eV-1\n\t- Ck = {} eV\n".format(
+                self.An, self.Bn, self.Cn, self.Ak, self.Bk, self.Ck
+            )
+        )
 
         return out
 
@@ -277,7 +297,8 @@ class PolySegment:
     The input parameters are the energies of the endpoints of the segments and the corresponding Epsilon_2 values.
 
     """
-    name = 'polysegment'
+
+    name = "polysegment"
 
     def __init__(self, energy, e2):
         """ Constructor of the PolySegment oscillator. By default, the amplitude and broadening are set to zero meaning
@@ -308,14 +329,18 @@ class PolySegment:
         e1 = epsi1(x_eV)
         e2 = epsi2(x_eV)
 
-        return e1 + 1.j * e2
+        return e1 + 1.0j * e2
 
     def __repr__(self):
-        out = 'PolySegment oscillator with endpoints:\n' \
-              '\t- Emin = {}\n' \
-              '\t- Emax = {} eV\n' \
-              '\t- Epsilon2(Emin) = {}\n' \
-              '\t- Epsilon2(Emax) = {}\n'.format(self.energy[0], self.energy[-1], self.e2[0], self.e2[-1])
+        out = (
+            "PolySegment oscillator with endpoints:\n"
+            "\t- Emin = {}\n"
+            "\t- Emax = {} eV\n"
+            "\t- Epsilon2(Emin) = {}\n"
+            "\t- Epsilon2(Emax) = {}\n".format(
+                self.energy[0], self.energy[-1], self.e2[0], self.e2[-1]
+            )
+        )
 
         return out
 
@@ -335,7 +360,13 @@ class Oscillator:
             self.Material = self.material_parameters["Material"]
 
     def __str__(self):
-        return "< Oscillator Type :: " + self.oscillator + ", Material :: " + self.Material + " >"
+        return (
+            "< Oscillator Type :: "
+            + self.oscillator
+            + ", Material :: "
+            + self.Material
+            + " >"
+        )
 
 
 class DielectricConstantModel(list):
@@ -345,7 +376,7 @@ class DielectricConstantModel(list):
 
     """
 
-    def __init__(self, e_inf=1., oscillators=()):
+    def __init__(self, e_inf=1.0, oscillators=()):
         """ Creates the dielectric constant model. The default model is air (constant dielectric constant = 1 at all
           wavelengths.
 
@@ -363,15 +394,19 @@ class DielectricConstantModel(list):
         :param kwargs: The arguments needed to create that oscillator.
         :return:
         """
-        available_models = {'poles': Poles,
-                            'lorentz': Lorentz,
-                            'drude': Drude,
-                            'cauchy': Cauchy,
-                            'gauss': Gauss,
-                            'polysegment': PolySegment}
+        available_models = {
+            "poles": Poles,
+            "lorentz": Lorentz,
+            "drude": Drude,
+            "cauchy": Cauchy,
+            "gauss": Gauss,
+            "polysegment": PolySegment,
+        }
 
-        assert name in available_models.keys(), 'Error: unknown oscillator model. ' \
-                                                'Valid names are: {}'.format(available_models.keys())
+        assert name in available_models.keys(), (
+            "Error: unknown oscillator model. "
+            "Valid names are: {}".format(available_models.keys())
+        )
 
         self.append(available_models[name](**kwargs))
 
@@ -381,12 +416,14 @@ class DielectricConstantModel(list):
         :param idx: The number of the oscillator (starting in 1)
         :return: None"""
 
-        assert 0 < idx <= len(self), 'Error: The available oscillators are:\n {}'.format(self.__repr__())
+        assert (
+            0 < idx <= len(self)
+        ), "Error: The available oscillators are:\n {}".format(self.__repr__())
 
         print(self[idx - 1])
-        a = input('Do you want to remove this oscillator from the model (Y/n)?')
+        a = input("Do you want to remove this oscillator from the model (Y/n)?")
 
-        if a in 'Yy':
+        if a in "Yy":
             self.pop(idx - 1)
 
     def dielectric_constants(self, x):
@@ -421,14 +458,14 @@ class DielectricConstantModel(list):
 
     def __repr__(self):
 
-        out = 'e_inf = {}\n'.format(self.e_inf)
+        out = "e_inf = {}\n".format(self.e_inf)
         for i in range(len(self)):
-            out += '{} - {}'.format(i + 1, self[i].__repr__())
+            out += "{} - {}".format(i + 1, self[i].__repr__())
 
         return out
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import matplotlib.pyplot as plt
     from solcore.absorption_calculator.transfer_matrix import calculate_rat
 
@@ -452,7 +489,7 @@ if __name__ == '__main__':
 
     n = model.n_and_k(E)
     #
-    plt.semilogx(E, np.real(n), 'b', label='n')
-    plt.semilogx(E, np.imag(n), 'r', label='k')
+    plt.semilogx(E, np.real(n), "b", label="n")
+    plt.semilogx(E, np.imag(n), "r", label="k")
     plt.legend()
     plt.show()

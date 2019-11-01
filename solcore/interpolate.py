@@ -13,9 +13,16 @@ class interp1d(object):
     UnivariateSpline - a more recent wrapper of the FITPACK routines
     """
 
-    def __init__(self, x: np.ndarray, y: np.ndarray, kind: str = 'linear',
-                 axis: int = -1, copy: bool = True, bounds_error: bool = False,
-                 fill_value: float = np.nan):
+    def __init__(
+        self,
+        x: np.ndarray,
+        y: np.ndarray,
+        kind: str = "linear",
+        axis: int = -1,
+        copy: bool = True,
+        bounds_error: bool = False,
+        fill_value: float = np.nan,
+    ):
         """ Initialize a 1D linear interpolation class.
 
         Description
@@ -60,16 +67,18 @@ class interp1d(object):
         self.bounds_error = bounds_error
         self.fill_value = fill_value
 
-        if kind in ['zero', 'slinear', 'quadratic', 'cubic']:
-            order = {'nearest': 0, 'zero': 0, 'slinear': 1,
-                     'quadratic': 2, 'cubic': 3}[kind]
-            kind = 'spline'
+        if kind in ["zero", "slinear", "quadratic", "cubic"]:
+            order = {"nearest": 0, "zero": 0, "slinear": 1, "quadratic": 2, "cubic": 3}[
+                kind
+            ]
+            kind = "spline"
         elif isinstance(kind, int):
             order = kind
-            kind = 'spline'
-        elif kind not in ('linear', 'nearest'):
-            raise NotImplementedError("%s is unsupported: Use fitpack " \
-                                      "routines for other types." % kind)
+            kind = "spline"
+        elif kind not in ("linear", "nearest"):
+            raise NotImplementedError(
+                "%s is unsupported: Use fitpack " "routines for other types." % kind
+            )
         x = np.array(x, copy=self.copy)
         y = np.array(y, copy=self.copy)
 
@@ -86,7 +95,7 @@ class interp1d(object):
         self.axis = axis % len(y.shape)
         self._kind = kind
 
-        if kind in ('linear', 'nearest'):
+        if kind in ("linear", "nearest"):
             # Make a "view" of the y array that is rotated to the interpolation
             # axis.
             axes = list(range(y.ndim))
@@ -95,9 +104,9 @@ class interp1d(object):
             oriented_y = y.transpose(axes)
             minval = 2
             len_y = oriented_y.shape[-1]
-            if kind == 'linear':
+            if kind == "linear":
                 self._call = self._call_linear
-            elif kind == 'nearest':
+            elif kind == "nearest":
                 self.x_bds = (x[1:] + x[:-1]) / 2.0
                 self._call = self._call_nearest
         else:
@@ -112,11 +121,11 @@ class interp1d(object):
 
         len_x = len(x)
         if len_x != len_y:
-            raise ValueError("x and y arrays must be equal in length along "
-                             "interpolation axis.")
+            raise ValueError(
+                "x and y arrays must be equal in length along " "interpolation axis."
+            )
         if len_x < minval:
-            raise ValueError("x and y arrays must have at "
-                             "least %d entries" % minval)
+            raise ValueError("x and y arrays must have at " "least %d entries" % minval)
         self.x = x
         self.y = oriented_y
 
@@ -157,7 +166,7 @@ class interp1d(object):
         #    would be inserted.
         #    Note: use side='left' (right) to searchsorted() to define the
         #    halfway point to be nearest to the left (right) neighbour
-        x_new_indices = np.searchsorted(self.x_bds, x_new, side='left')
+        x_new_indices = np.searchsorted(self.x_bds, x_new, side="left")
 
         # 3. Clip x_new_indices so that they are within the range of x indices.
         x_new_indices = x_new_indices.clip(0, len(self.x) - 1).astype(np.intp)
@@ -214,15 +223,15 @@ class interp1d(object):
                 else:
                     y_new[...] = self.fill_value
             return np.asarray(y_new)
-        elif self._kind in ('linear', 'nearest'):
+        elif self._kind in ("linear", "nearest"):
             y_new[..., out_of_bounds] = self.fill_value
             axes = list(range(ny - nx))
-            axes[self.axis:self.axis] = list(range(ny - nx, ny))
+            axes[self.axis : self.axis] = list(range(ny - nx, ny))
             return y_new.transpose(axes)
         else:
             y_new[out_of_bounds] = self.fill_value
             axes = list(range(nx, ny))
-            axes[self.axis:self.axis] = list(range(nx))
+            axes[self.axis : self.axis] = list(range(nx))
             return y_new.transpose(axes)
 
     def _check_bounds(self, x_new: np.ndarray) -> np.ndarray:
@@ -246,11 +255,9 @@ class interp1d(object):
 
         # !! Could provide more information about which values are out of bounds
         if self.bounds_error and below_bounds.any():
-            raise ValueError("A value in x_new is below the interpolation "
-                             "range.")
+            raise ValueError("A value in x_new is below the interpolation " "range.")
         if self.bounds_error and above_bounds.any():
-            raise ValueError("A value in x_new is above the interpolation "
-                             "range.")
+            raise ValueError("A value in x_new is above the interpolation " "range.")
 
         # !! Should we emit a warning if some values are out of bounds?
         # !! matlab does not.
@@ -261,8 +268,13 @@ class interp1d(object):
 class BilinearInterpolation(object):
     """docstring for BilinearInterpolation"""
 
-    def __init__(self, x: Union[list, np.ndarray], y: Union[list, np.ndarray],
-                 z: Union[list, np.ndarray], fill_value: float = 0.):
+    def __init__(
+        self,
+        x: Union[list, np.ndarray],
+        y: Union[list, np.ndarray],
+        z: Union[list, np.ndarray],
+        fill_value: float = 0.0,
+    ):
         super(BilinearInterpolation, self).__init__()
         self.x = np.array(x)
         self.y = np.array(y)
@@ -274,12 +286,14 @@ class BilinearInterpolation(object):
         z_s = self.z.shape
         assert x_s[0] >= 3, "Need at least 3 points in x."
         assert y_s[0] >= 3, "Need at least 3 points in y."
-        assert x_s[0] == z_s[
-            0], "The number of rows in z (which is %s), must be the same as number of elements in x (which is %s)" % (
-        x_s[0], z_s[0])
-        assert y_s[0] == z_s[
-            1], "The number of columns in z (which is %s), must be the same as number of elements in y (which is %s)" % (
-        y_s[0], z_s[1])
+        assert x_s[0] == z_s[0], (
+            "The number of rows in z (which is %s), must be the same as number of elements in x (which is %s)"
+            % (x_s[0], z_s[0])
+        )
+        assert y_s[0] == z_s[1], (
+            "The number of columns in z (which is %s), must be the same as number of elements in y (which is %s)"
+            % (y_s[0], z_s[1])
+        )
 
     def __call__(self, xvalue: float, yvalue: float) -> np.ndarray:
         """The intepolated value of the surface."""
@@ -296,7 +310,7 @@ class BilinearInterpolation(object):
 
             if not found:
                 # print "Not found, returning 0."
-                return 0.
+                return 0.0
             x_v = (self.x[x_i], self.x[x_i + 1])
             x_i = (x_i, x_i + 1)
 
@@ -312,32 +326,32 @@ class BilinearInterpolation(object):
 
             if not found:
                 # print "Not found, returning 0."
-                return 0.
+                return 0.0
             y_v = (self.y[y_i], self.y[y_i + 1])
             y_i = (y_i, y_i + 1)
 
             D = (x_v[1] - x_v[0]) * (y_v[1] - y_v[0])
             ta = self.z[x_i[0], y_i[0]]
-            tb = (x_v[1] - xvalue)
-            tc = (y_v[1] - yvalue)
+            tb = x_v[1] - xvalue
+            tc = y_v[1] - yvalue
             t1 = ta * tb * tc / D
             # print t1, "=", ta, "*", tb, "*", tc, "/", D
 
             ta = self.z[x_i[1], y_i[0]]
-            tb = (xvalue - x_v[0])
-            tc = (y_v[1] - yvalue)
+            tb = xvalue - x_v[0]
+            tc = y_v[1] - yvalue
             t2 = ta * tb * tc / D
             # print t1, "=", ta, "*", tb, "*", tc, "/", D
 
             ta = self.z[x_i[0], y_i[1]]
-            tb = (x_v[1] - xvalue)
-            tc = (yvalue - y_v[0])
+            tb = x_v[1] - xvalue
+            tc = yvalue - y_v[0]
             t3 = ta * tb * tc / D
             # print t1, "=", ta, "*", tb, "*", tc, "/", D
 
             ta = self.z[x_i[1], y_i[1]]
-            tb = (xvalue - x_v[0])
-            tc = (yvalue - y_v[0])
+            tb = xvalue - x_v[0]
+            tc = yvalue - y_v[0]
             t4 = ta * tb * tc / D
             # print t1, "=", ta, "*", tb, "*", tc, "/", D
 
@@ -350,7 +364,11 @@ class BilinearInterpolation(object):
         except ValueError:
             #            import pdb; pdb.set_trace()
             # Is one of the inputs an array?
-            if type(xvalue) == list or type(xvalue) == tuple or type(xvalue) == type(np.array([])):
+            if (
+                type(xvalue) == list
+                or type(xvalue) == tuple
+                or type(xvalue) == type(np.array([]))
+            ):
                 constructed_list = []
                 for sub_xvalue in xvalue:
                     constructed_list.append(self(sub_xvalue, yvalue))
@@ -359,14 +377,21 @@ class BilinearInterpolation(object):
 
 if __name__ == "__main__":
     # Some wavelength points
-    x = np.array([400., 600., 601, 1000.])
+    x = np.array([400.0, 600.0, 601, 1000.0])
 
     # Some angle values
-    y = np.array([0., np.pi / 4, np.pi / 2])
+    y = np.array([0.0, np.pi / 4, np.pi / 2])
 
     # Some reflectivity values
     #             rads @ 400nm,    rads @ 600nm,        rads @ 601m,             rads @ 1000nm
-    z = np.array([[0., 0., 0.], [1e-9, 1e-9, 1e-9], [1 - 1e-9, 1 - 1e-9, 1 - 1e-9], [1., 1., 1.]])
+    z = np.array(
+        [
+            [0.0, 0.0, 0.0],
+            [1e-9, 1e-9, 1e-9],
+            [1 - 1e-9, 1 - 1e-9, 1 - 1e-9],
+            [1.0, 1.0, 1.0],
+        ]
+    )
     # print z.shape
 
     z_i = BilinearInterpolation(x, y, z)

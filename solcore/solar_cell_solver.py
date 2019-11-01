@@ -3,7 +3,13 @@ import numpy as np
 import solcore.analytic_solar_cells as ASC
 from solcore.light_source import LightSource
 from solcore.state import State
-from solcore.optics import solve_beer_lambert, solve_tmm, solve_rcwa, rcwa_options, solve_external_optics
+from solcore.optics import (
+    solve_beer_lambert,
+    solve_tmm,
+    solve_rcwa,
+    rcwa_options,
+    solve_external_optics,
+)
 from solcore.structure import Layer, Junction, TunnelJunction
 
 try:
@@ -16,6 +22,7 @@ except AttributeError:
 default_options = State()
 pdd_options = PDD.pdd_options
 asc_options = ASC.db_options
+
 
 def merge_dicts(*dict_args):
     """
@@ -34,8 +41,12 @@ default_options.T = 298
 
 # Illumination spectrum
 default_options.wavelength = np.linspace(300, 1800, 251) * 1e-9
-default_options.light_source = LightSource(source_type='standard', version='AM1.5g', x=default_options.wavelength,
-                                           output_units='photon_flux_per_m')
+default_options.light_source = LightSource(
+    source_type="standard",
+    version="AM1.5g",
+    x=default_options.wavelength,
+    output_units="photon_flux_per_m",
+)
 
 # IV control
 default_options.voltages = np.linspace(0, 1.2, 100)
@@ -46,10 +57,12 @@ default_options.position = None
 default_options.radiative_coupling = False
 
 # Optics control
-default_options.optics_method = 'BL'
+default_options.optics_method = "BL"
 default_options.recalculate_absorption = False
 
-default_options = merge_dicts(default_options, ASC.db_options, PDD.pdd_options, rcwa_options)
+default_options = merge_dicts(
+    default_options, ASC.db_options, PDD.pdd_options, rcwa_options
+)
 
 
 def solar_cell_solver(solar_cell, task, user_options=None):
@@ -68,19 +81,20 @@ def solar_cell_solver(solar_cell, task, user_options=None):
     prepare_solar_cell(solar_cell, options)
     options.T = solar_cell.T
 
-    if task == 'optics':
+    if task == "optics":
         solve_optics(solar_cell, options)
-    elif task == 'iv':
+    elif task == "iv":
         solve_iv(solar_cell, options)
-    elif task == 'qe':
+    elif task == "qe":
         solve_qe(solar_cell, options)
-    elif task == 'equilibrium':
+    elif task == "equilibrium":
         solve_equilibrium(solar_cell, options)
-    elif task == 'short_circuit':
+    elif task == "short_circuit":
         solve_short_circuit(solar_cell, options)
     else:
         raise ValueError(
-            'ERROR in "solar_cell_solver":\n\tValid values for "task" are: "optics", "iv", "qe", "equilibrium" and "short_circuit".')
+            'ERROR in "solar_cell_solver":\n\tValid values for "task" are: "optics", "iv", "qe", "equilibrium" and "short_circuit".'
+        )
 
 
 def solve_optics(solar_cell, options):
@@ -96,29 +110,36 @@ def solve_optics(solar_cell, options):
     :param options: Options for the optics solver
     :return: None
     """
-    print('Solving optics of the solar cell...')
+    print("Solving optics of the solar cell...")
 
-    calculated = hasattr(solar_cell[0], 'absorbed')
-    recalc = options.recalculate_absorption if 'recalculate_absorption' in options.keys() else False
+    calculated = hasattr(solar_cell[0], "absorbed")
+    recalc = (
+        options.recalculate_absorption
+        if "recalculate_absorption" in options.keys()
+        else False
+    )
     if not calculated or recalc:
 
         if options.optics_method is None:
-            print('Warning: Not solving the optics of the solar cell.')
-        elif options.optics_method == 'external':
+            print("Warning: Not solving the optics of the solar cell.")
+        elif options.optics_method == "external":
             solve_external_optics(solar_cell, options)
-        elif options.optics_method == 'BL':
+        elif options.optics_method == "BL":
             solve_beer_lambert(solar_cell, options)
-        elif options.optics_method == 'TMM':
+        elif options.optics_method == "TMM":
             solve_tmm(solar_cell, options)
-        elif options.optics_method == 'RCWA':
+        elif options.optics_method == "RCWA":
             solve_rcwa(solar_cell, options)
         else:
             raise ValueError(
-                'ERROR in "solar_cell_solver":\n\tOptics solver method must be None, "external", "BL", "TMM" or "RCWA".')
+                'ERROR in "solar_cell_solver":\n\tOptics solver method must be None, "external", "BL", "TMM" or "RCWA".'
+            )
 
     else:
-        print('Already calculated reflection, transmission and absorption profile - not recalculating. '
-              'Set recalculate_absorption to True in the options if you want absorption to be calculated again.')
+        print(
+            "Already calculated reflection, transmission and absorption profile - not recalculating. "
+            "Set recalculate_absorption to True in the options if you want absorption to be calculated again."
+        )
 
 
 def solve_iv(solar_cell, options):
@@ -130,42 +151,48 @@ def solve_iv(solar_cell, options):
     """
     solve_optics(solar_cell, options)
 
-    print('Solving IV of the junctions...')
+    print("Solving IV of the junctions...")
     for j in solar_cell.junction_indices:
 
-        if solar_cell[j].kind == 'PDD':
+        if solar_cell[j].kind == "PDD":
             PDD.iv_pdd(solar_cell[j], options)
-        elif solar_cell[j].kind == 'DA':
+        elif solar_cell[j].kind == "DA":
             ASC.iv_depletion(solar_cell[j], options)
-        elif solar_cell[j].kind == '2D':
+        elif solar_cell[j].kind == "2D":
             ASC.iv_2diode(solar_cell[j], options)
-        elif solar_cell[j].kind == 'DB':
+        elif solar_cell[j].kind == "DB":
             ASC.iv_detailed_balance(solar_cell[j], options)
         else:
             raise ValueError(
                 'ERROR in "solar_cell_solver":\n\tJunction {} has an invalid "type". It must be "PDD", "DA", "2D" or "DB".'.format(
-                    j))
+                    j
+                )
+            )
 
-    print('Solving IV of the tunnel junctions...')
+    print("Solving IV of the tunnel junctions...")
     for j in solar_cell.tunnel_indices:
 
-        if solar_cell[j].kind == 'resistive':
+        if solar_cell[j].kind == "resistive":
             # The tunnel junction is modeled as a simple resistor
             ASC.resistive_tunnel_junction(solar_cell[j], options)
-        elif solar_cell[j].kind == 'parametric':
+        elif solar_cell[j].kind == "parametric":
             # The tunnel junction is modeled using a simple parametric model
             ASC.parametric_tunnel_junction(solar_cell[j], options)
-        elif solar_cell[j].kind == 'external':
+        elif solar_cell[j].kind == "external":
             # The tunnel junction is modeled using a simple parametric model
             ASC.external_tunnel_junction(solar_cell[j], options)
-        elif solar_cell[j].kind == 'analytic':
-            print('Sorry, the analytical tunnel junction model is not implemented, yet.')
+        elif solar_cell[j].kind == "analytic":
+            print(
+                "Sorry, the analytical tunnel junction model is not implemented, yet."
+            )
         else:
             raise ValueError(
                 'ERROR in "solar_cell_solver":\n\tTunnel junction {} has an invalid "type". It must be "parametric", "analytic", "external" or "resistive".'.format(
-                    j))
+                    j
+                )
+            )
 
-    print('Solving IV of the total solar cell...')
+    print("Solving IV of the total solar cell...")
     ASC.iv_multijunction(solar_cell, options)
 
 
@@ -179,23 +206,25 @@ def solve_qe(solar_cell, options):
 
     solve_optics(solar_cell, options)
 
-    print('Solving QE of the solar cell...')
+    print("Solving QE of the solar cell...")
     for j in solar_cell.junction_indices:
-        if solar_cell[j].kind == 'PDD':
+        if solar_cell[j].kind == "PDD":
             PDD.qe_pdd(solar_cell[j], options)
-        elif solar_cell[j].kind == 'DA':
+        elif solar_cell[j].kind == "DA":
             ASC.qe_depletion(solar_cell[j], options)
-        elif solar_cell[j].kind == '2D':
+        elif solar_cell[j].kind == "2D":
             # We solve this case as if it were DB. Therefore, to work it needs the same inputs in the Junction object
             wl = options.wavelength
             ASC.qe_detailed_balance(solar_cell[j], wl)
-        elif solar_cell[j].kind == 'DB':
+        elif solar_cell[j].kind == "DB":
             wl = options.wavelength
             ASC.qe_detailed_balance(solar_cell[j], wl)
         else:
             raise ValueError(
                 'ERROR in "solar_cell_solver":\n\tJunction {} has an invalid "type". It must be "PDD", "DA", "2D" or "DB".'.format(
-                    j))
+                    j
+                )
+            )
 
 
 def solve_equilibrium(solar_cell, options):
@@ -207,7 +236,7 @@ def solve_equilibrium(solar_cell, options):
     """
     for j in solar_cell.junction_indices:
 
-        if solar_cell[j].kind == 'PDD':
+        if solar_cell[j].kind == "PDD":
             PDD.equilibrium_pdd(solar_cell[j], options)
         else:
             print('WARNING: Only PDD junctions can be solved in "equilibrium".')
@@ -225,7 +254,7 @@ def solve_short_circuit(solar_cell, options):
 
     for j in solar_cell.junction_indices:
 
-        if solar_cell[j].kind == 'PDD':
+        if solar_cell[j].kind == "PDD":
             PDD.short_circuit_pdd(solar_cell[j], options)
         else:
             print('WARNING: Only PDD junctions can be solved in "short_circuit".')
@@ -257,13 +286,15 @@ def prepare_solar_cell(solar_cell, options):
             try:
                 kind = solar_cell[j].kind
             except AttributeError as err:
-                print('ERROR preparing the solar cell: Junction {} has no kind!'.format(j))
+                print(
+                    "ERROR preparing the solar cell: Junction {} has no kind!".format(j)
+                )
                 raise err
 
             # This junctions will not, typically, have a width
-            if kind in ['2D', 'DB']:
+            if kind in ["2D", "DB"]:
                 # 2D and DB junctions do not often have a width (or need it) so we set an arbitrary width
-                if not hasattr(layer_object, 'width'):
+                if not hasattr(layer_object, "width"):
                     solar_cell[j].width = 1e-6  # 1 µm
 
             else:

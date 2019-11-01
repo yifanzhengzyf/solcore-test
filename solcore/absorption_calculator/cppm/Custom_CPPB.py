@@ -7,7 +7,7 @@ from solcore.science_tracker import science_reference
 import solcore.constants as const
 
 
-class Custom_CPPB():
+class Custom_CPPB:
     """
     Customisable Critical-Point Parabolic-Band model (CPPB) using expressions from Sadao Adachi and Charles Kim.
 
@@ -21,15 +21,18 @@ class Custom_CPPB():
         # Define filepath to the MaterialParameters file import...
         DIR, SCRIPT = os.path.split(__file__)
 
-        self.__PARAMS_PATH = os.path.join(DIR, 'Custom_CPPB_MaterialParamaters.txt')
+        self.__PARAMS_PATH = os.path.join(DIR, "Custom_CPPB_MaterialParamaters.txt")
 
         # Opens MaterialParameters file and dumps all content into a list...
         with open(self.__PARAMS_PATH, mode="r") as File:
             self.__MatParams = File.read().splitlines()
 
         # Single line lists all callable functions in the Custom_CPPB class, with the exception of __init__...
-        self.__METHODS = [func for func in dir(Custom_CPPB)
-                          if callable(getattr(Custom_CPPB, func)) and not func.startswith("__")]
+        self.__METHODS = [
+            func
+            for func in dir(Custom_CPPB)
+            if callable(getattr(Custom_CPPB, func)) and not func.startswith("__")
+        ]
 
     def Material_Params(self, material, *parameters):
         """
@@ -85,7 +88,10 @@ class Custom_CPPB():
                     PARAMS_LIST[p] = PARAMS[p]
 
                 else:
-                    raise ValueError("Material_Params ERROR :: Material parameter %s not found..." % p)
+                    raise ValueError(
+                        "Material_Params ERROR :: Material parameter %s not found..."
+                        % p
+                    )
 
             return PARAMS_LIST
 
@@ -103,9 +109,11 @@ class Custom_CPPB():
         """
 
         # Scientific reference for this work...
-        science_reference("Charles Kim, 'Modelling the optical dielectric function of semiconductors",
-                          "C. C. Kim et al, 'Modelling the optical dielectric function of semiconductors: Extension of "
-                          "the critical-point parabolic band approximation', Physical Review B 45(20) 11749, 1992")
+        science_reference(
+            "Charles Kim, 'Modelling the optical dielectric function of semiconductors",
+            "C. C. Kim et al, 'Modelling the optical dielectric function of semiconductors: Extension of "
+            "the critical-point parabolic band approximation', Physical Review B 45(20) 11749, 1992",
+        )
 
         return Gamma * np.exp(-1 * Alpha * ((energy - E0) / Gamma) ** 2)
 
@@ -128,8 +136,10 @@ class Custom_CPPB():
         """
 
         # Scientific reference for this work...
-        science_reference("Sadao Adachi, Physical Properties of III-V Semiconductor Compounds",
-                          "Adachi, S., Physical Properties of III-V Semiconductor Compounds, John Wiley & Sons (1992)")
+        science_reference(
+            "Sadao Adachi, Physical Properties of III-V Semiconductor Compounds",
+            "Adachi, S., Physical Properties of III-V Semiconductor Compounds, John Wiley & Sons (1992)",
+        )
 
         # Conditional statement determining where the input parameters come from...
         if material_parameters is None and bool(kwargs) is False:
@@ -174,8 +184,9 @@ class Custom_CPPB():
         F_ChiO = (ChiO ** (-2)) * (2 - (1 + ChiO) ** 0.5 - (1 - ChiO) ** 0.5)
         F_ChiSO = (ChiSO ** (-2)) * (2 - (1 + ChiSO) ** 0.5 - (1 - ChiSO) ** 0.5)
 
-        Eps = (Params["A"] * (Params["E0"] ** (-1.5))) * (F_ChiO + 0.5 * ((Params["E0"] / Params["E0_d0"]) ** 1.5) \
-                                                          * F_ChiSO)
+        Eps = (Params["A"] * (Params["E0"] ** (-1.5))) * (
+            F_ChiO + 0.5 * ((Params["E0"] / Params["E0_d0"]) ** 1.5) * F_ChiSO
+        )
 
         # Additional line to address change in phase of the imaginary signal.
         return Eps.real + 1j * abs(Eps.imag)
@@ -200,8 +211,10 @@ class Custom_CPPB():
         """
 
         # Scientific reference for this work...
-        science_reference("Sadao Adachi, Physical Properties of III-V Semiconductor Compounds",
-                          "Adachi, S., Physical Properties of III-V Semiconductor Compounds, John Wiley & Sons (1992)")
+        science_reference(
+            "Sadao Adachi, Physical Properties of III-V Semiconductor Compounds",
+            "Adachi, S., Physical Properties of III-V Semiconductor Compounds, John Wiley & Sons (1992)",
+        )
 
         # Conditional statement determining where the input parameters come from...
         if material_parameters is None and bool(kwargs) is False:
@@ -243,8 +256,9 @@ class Custom_CPPB():
         Chi_1D = (energy + 1j * Gamma) / Params["E1"]
         Chi_1SD = (energy + 1j * Gamma) / Params["E1_d1"]
 
-        Eps = (-1 * Params["B1"] * Chi_1D ** (-2)) * np.log(1 - Chi_1D ** 2) + (-1 * Params["B1s"] * Chi_1SD ** (-2)) \
-                                                                               * np.log(1 - Chi_1SD ** 2)
+        Eps = (-1 * Params["B1"] * Chi_1D ** (-2)) * np.log(1 - Chi_1D ** 2) + (
+            -1 * Params["B1s"] * Chi_1SD ** (-2)
+        ) * np.log(1 - Chi_1SD ** 2)
 
         # Additional line to address change in phase of the imaginary signal.
         return Eps.real + 1j * abs(Eps.imag)
@@ -268,8 +282,10 @@ class Custom_CPPB():
         """
 
         # Scientific reference for this work...
-        science_reference("Sadao Adachi, Physical Properties of III-V Semiconductor Compounds",
-                          "Adachi, S., Physical Properties of III-V Semiconductor Compounds, John Wiley & Sons (1992)")
+        science_reference(
+            "Sadao Adachi, Physical Properties of III-V Semiconductor Compounds",
+            "Adachi, S., Physical Properties of III-V Semiconductor Compounds, John Wiley & Sons (1992)",
+        )
 
         # Conditional statement determining where the input parameters come from...
         if material_parameters is None and bool(kwargs) is False:
@@ -305,14 +321,31 @@ class Custom_CPPB():
                     print("Invalid material parameter...")
 
         # Frequency dependent broadening parameter...
-        Gamma = self.Broad(Params["Gamma_Eg_ID"], Params["Alpha_Eg_ID"], Params["Eg_ID"], energy)
+        Gamma = self.Broad(
+            Params["Gamma_Eg_ID"], Params["Alpha_Eg_ID"], Params["Eg_ID"], energy
+        )
 
         # Function describing the contributions of indirect transitions...
-        term1 = -1 * (((Params["Eg_ID"] ** 2) / (energy + 1j * Gamma) ** 2) * np.log(Params["Ec"] / Params["Eg_ID"]))
-        term2 = 0.5 * ((1 + (Params["Eg_ID"] / (energy + 1j * Gamma))) ** 2) * \
-                np.log((energy + 1j * Gamma + Params["Ec"]) / (energy + 1j * Gamma + Params["Eg_ID"]))
-        term3 = 0.5 * ((1 - (Params["Eg_ID"] / (energy + 1j * Gamma))) ** 2) * \
-                np.log((energy + 1j * Gamma - Params["Ec"]) / (energy + 1j * Gamma - Params["Eg_ID"]))
+        term1 = -1 * (
+            ((Params["Eg_ID"] ** 2) / (energy + 1j * Gamma) ** 2)
+            * np.log(Params["Ec"] / Params["Eg_ID"])
+        )
+        term2 = (
+            0.5
+            * ((1 + (Params["Eg_ID"] / (energy + 1j * Gamma))) ** 2)
+            * np.log(
+                (energy + 1j * Gamma + Params["Ec"])
+                / (energy + 1j * Gamma + Params["Eg_ID"])
+            )
+        )
+        term3 = (
+            0.5
+            * ((1 - (Params["Eg_ID"] / (energy + 1j * Gamma))) ** 2)
+            * np.log(
+                (energy + 1j * Gamma - Params["Ec"])
+                / (energy + 1j * Gamma - Params["Eg_ID"])
+            )
+        )
 
         Eps = (2 * Params["D"] / np.pi) * (term1 + term2 + term3)
 
@@ -338,8 +371,10 @@ class Custom_CPPB():
         """
 
         # Scientific reference for this work...
-        science_reference("Sadao Adachi, Physical Properties of III-V Semiconductor Compounds",
-                          "Adachi, S., Physical Properties of III-V Semiconductor Compounds, John Wiley & Sons (1992)")
+        science_reference(
+            "Sadao Adachi, Physical Properties of III-V Semiconductor Compounds",
+            "Adachi, S., Physical Properties of III-V Semiconductor Compounds, John Wiley & Sons (1992)",
+        )
 
         # Conditional statement determining where the input parameters come from...
         if material_parameters is None and bool(kwargs) is False:
@@ -375,12 +410,15 @@ class Custom_CPPB():
                     print("Invalid material parameter...")
 
         # Frequency dependent broadening parameter...
-        Gamma = self.Broad(Params["Gamma_Ex0"], Params["Alpha_Ex0"], Params["E0"], energy)
+        Gamma = self.Broad(
+            Params["Gamma_Ex0"], Params["Alpha_Ex0"], Params["E0"], energy
+        )
         Eps_n = np.zeros((len(energy), int(Params["n"] + 1)), dtype="complex")
 
         for j in range(1, int(Params["n"] + 1)):
-            Eps_n[:, j] = (Params["A_Ex"] / j ** 3) * ((Params["E0"] - (Params["G_3D"] / \
-                                                                        (j ** 2)) - energy - 1j * Gamma) ** -1)
+            Eps_n[:, j] = (Params["A_Ex"] / j ** 3) * (
+                (Params["E0"] - (Params["G_3D"] / (j ** 2)) - energy - 1j * Gamma) ** -1
+            )
 
         Eps = np.sum(Eps_n, 1)
 
@@ -405,8 +443,10 @@ class Custom_CPPB():
         """
 
         # Scientific reference for this work...
-        science_reference("Sadao Adachi, Physical Properties of III-V Semiconductor Compounds",
-                          "Adachi, S., Physical Properties of III-V Semiconductor Compounds, John Wiley & Sons (1992)")
+        science_reference(
+            "Sadao Adachi, Physical Properties of III-V Semiconductor Compounds",
+            "Adachi, S., Physical Properties of III-V Semiconductor Compounds, John Wiley & Sons (1992)",
+        )
 
         # Conditional statement determining where the input parameters come from...
         if material_parameters is None and bool(kwargs) is False:
@@ -445,7 +485,9 @@ class Custom_CPPB():
         Gamma = self.Broad(Params["Gamma_E2"], Params["Alpha_E2"], Params["E2"], energy)
 
         # Damped harmonic oscillator function described by Adachi...
-        Eps = Params["C"] / ((1 - (energy / Params["E2"]) ** 2) - 1j * (energy / Params["E2"]) * Gamma)
+        Eps = Params["C"] / (
+            (1 - (energy / Params["E2"]) ** 2) - 1j * (energy / Params["E2"]) * Gamma
+        )
 
         # Additional line to address change in phase of the imaginary signal.
         return Eps.real + 1j * abs(Eps.imag)
@@ -466,7 +508,10 @@ class Custom_CPPB():
         """
 
         # Scientific reference for this work...
-        science_reference("J. A. Woollam, Guide to using WVASE", "J. A. Woollam Co. Inc., Copyright 1994-2012")
+        science_reference(
+            "J. A. Woollam, Guide to using WVASE",
+            "J. A. Woollam Co. Inc., Copyright 1994-2012",
+        )
 
         # Remove material_parameters argument from the kwargs dictionary to avoid confusion...
         if "material_parameters" in kwargs:
@@ -475,7 +520,9 @@ class Custom_CPPB():
         Gamma = self.Broad(kwargs["Gamma"], kwargs["Alpha"], kwargs["E0"], energy)
 
         # Eps = (Params["C"] * Params["E0"]**2) / ((Params["E0"]**2 - energy**2) - 1j*energy*Gamma)
-        Eps = (kwargs["Amp"] * kwargs["E0"]) / (kwargs["E0"] ** 2 - energy ** 2 - 1j * Gamma * energy)
+        Eps = (kwargs["Amp"] * kwargs["E0"]) / (
+            kwargs["E0"] ** 2 - energy ** 2 - 1j * Gamma * energy
+        )
 
         # Additional line to address change in phase of the imaginary signal.
         return Eps.real + 1j * abs(Eps.imag)
@@ -496,8 +543,11 @@ class Custom_CPPB():
         """
 
         # Scientific reference for this work...
-        science_reference("Wilhelm Sellmeier's development of the Cauchy dispersion relation, taken from the J."
-                          " A. Woollam WVASE manual", "J. A. Woollam Co. Inc., Copyright 1994-2012")
+        science_reference(
+            "Wilhelm Sellmeier's development of the Cauchy dispersion relation, taken from the J."
+            " A. Woollam WVASE manual",
+            "J. A. Woollam Co. Inc., Copyright 1994-2012",
+        )
 
         # Remove material_parameters argument from the kwargs dictionary to avoid confusion...
         if "material_parameters" in kwargs:
@@ -506,7 +556,10 @@ class Custom_CPPB():
         # Work out number of Sellmeier terms from length of kwargs...
         if np.mod(len(kwargs), 2) != 0:
 
-            raise ValueError("Insufficient number of Sellmeier coefficients :: No. kwargs == %d" % len(kwargs))
+            raise ValueError(
+                "Insufficient number of Sellmeier coefficients :: No. kwargs == %d"
+                % len(kwargs)
+            )
 
         else:
 
@@ -516,12 +569,13 @@ class Custom_CPPB():
         epsilon = np.zeros((int(terms), len(energy)), dtype=complex)
 
         # define the conversion constant to go between energy in eV and lambda in SI units...
-        C = ((const.h * const.c) / const.q) * 1E6
+        C = ((const.h * const.c) / const.q) * 1e6
 
         # calculate Sellmeier expression for the given coefficients...
         for i in range(0, int(terms)):
             epsilon[i] = (kwargs["A%d" % (i + 1)] * (C / energy) ** 2) / (
-            (C / energy) ** 2 - kwargs["L%d" % (i + 1)] ** 2)
+                (C / energy) ** 2 - kwargs["L%d" % (i + 1)] ** 2
+            )
 
         return sum(epsilon, 0) + 1
 
@@ -608,7 +662,9 @@ class Custom_CPPB():
         """
 
         # Find the length of oscillator structure and energy array and initialise a complex array for epsilon...
-        epsilon = np.zeros((len(oscillator_structure), len(energy_array)), dtype="complex")
+        epsilon = np.zeros(
+            (len(oscillator_structure), len(energy_array)), dtype="complex"
+        )
 
         # Calculate the contributions from each specified oscillator...
         i = 0
@@ -620,12 +676,18 @@ class Custom_CPPB():
                 getattr(self, Osc.oscillator)
             except KeyError:
 
-                print("Custom_CPPB() does not contain an oscillator function with name = " + Osc.oscillator)
+                print(
+                    "Custom_CPPB() does not contain an oscillator function with name = "
+                    + Osc.oscillator
+                )
 
             method = getattr(self, Osc.oscillator)
 
-            epsilon[i] = method(energy=energy_array, material_parameters=Osc.material_parameters,
-                                **Osc.arguments)
+            epsilon[i] = method(
+                energy=energy_array,
+                material_parameters=Osc.material_parameters,
+                **Osc.arguments
+            )
 
             i += 1
 
@@ -656,8 +718,15 @@ class Custom_CPPB():
         """
 
         # Define lambda functions for calculating k and alpha quickly...
-        k_func = lambda Epsilon: np.sqrt(((Epsilon.real ** 2 + Epsilon.imag ** 2) ** 0.5 - Epsilon.real) / 2)
-        alpha_func = lambda energy, k: ((4 * const.pi) / ((const.h * const.c) / (energy * const.q))) * k
+        k_func = lambda Epsilon: np.sqrt(
+            ((Epsilon.real ** 2 + Epsilon.imag ** 2) ** 0.5 - Epsilon.real) / 2
+        )
+        alpha_func = (
+            lambda energy, k: (
+                (4 * const.pi) / ((const.h * const.c) / (energy * const.q))
+            )
+            * k
+        )
 
         # Calculate the complex dielectruc function...
         epsilon = self.eps_calc(oscillator_structure, energy_array)
@@ -685,9 +754,13 @@ class Custom_CPPB():
         """
 
         # Define lambda function for calculating n...
-        n_func = lambda Epsilon: np.sqrt(((Epsilon.real ** 2 + Epsilon.imag ** 2) ** 0.5 + Epsilon.real) / 2)
+        n_func = lambda Epsilon: np.sqrt(
+            ((Epsilon.real ** 2 + Epsilon.imag ** 2) ** 0.5 + Epsilon.real) / 2
+        )
         # Define lambda function for calculating k...
-        k_func = lambda Epsilon: np.sqrt(((Epsilon.real ** 2 + Epsilon.imag ** 2) ** 0.5 - Epsilon.real) / 2)
+        k_func = lambda Epsilon: np.sqrt(
+            ((Epsilon.real ** 2 + Epsilon.imag ** 2) ** 0.5 - Epsilon.real) / 2
+        )
 
         # Calculate the complex dielectruc function...
         epsilon = self.eps_calc(oscillator_structure, energy_array)
@@ -700,4 +773,9 @@ class Custom_CPPB():
         k_components = k_func(epsilon["components"])
         k = k_func(epsilon["eps"])
 
-        return {"n": n, "n_components": n_components, "k": k, "k_components": k_components}
+        return {
+            "n": n,
+            "n_components": n_components,
+            "k": k,
+            "k_components": k_components,
+        }

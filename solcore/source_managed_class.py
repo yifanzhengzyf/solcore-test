@@ -24,7 +24,7 @@ def breakoutClass(cls):
     breakout_candidates = list(cls.__dict__.keys())
 
     # We scan all the methods of the class
-    for funcname in (breakout_candidates):
+    for funcname in breakout_candidates:
         func = getattr(cls, funcname)
 
         # And choose those tagged with the 'breakout' decorator
@@ -70,9 +70,9 @@ class SourceManagedClass(metaclass=Singleton):
         if name is None:
             self.initialise_cache()
             for sourcename in self.sources.keys():
-                self.database.read(self.sources[sourcename], encoding='utf-8')
+                self.database.read(self.sources[sourcename], encoding="utf-8")
         else:
-            self.database.read(self.sources[name], encoding='utf-8')
+            self.database.read(self.sources[name], encoding="utf-8")
 
     def initialise_cache(self):
         """ Initialises th database, kept in a ConfigParser format. Quite convenient if you think about it. """
@@ -83,16 +83,16 @@ class SourceManagedClass(metaclass=Singleton):
 
 
 if __name__ == "__main__":
+
     @breakoutClass
     class M(metaclass=Singleton):
         @breakout
         def moo(self):
-            print('it worked!')
+            print("it worked!")
 
         @breakout
         def bah(self, something_else):
             print(something_else)
-
 
     # This should work even without creating any instance of the class
     moo()

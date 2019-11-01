@@ -6,7 +6,9 @@ from solcore.constants import q, hbar, electron_mass as m0
 
 from operator import itemgetter
 
-sort_simultaneous = lambda *lists: [list(x) for x in zip(*sorted(zip(*lists), key=itemgetter(0)))]
+sort_simultaneous = lambda *lists: [
+    list(x) for x in zip(*sorted(zip(*lists), key=itemgetter(0)))
+]
 
 
 def alfa(Eband, m):
@@ -36,7 +38,7 @@ def kp4x4(mat, host_material):
 
     # Strain parameters
     exx = (host_material.lattice_constant - a0) / a0
-    ezz = - 2 * mat.c12 / mat.c11 * exx
+    ezz = -2 * mat.c12 / mat.c11 * exx
 
     Oe = ac * (exx + exx + ezz)
     Pe = -av * (exx + exx + ezz)
@@ -47,12 +49,12 @@ def kp4x4(mat, host_material):
     Evlh = Ev0 - Pe + Qe
 
     # Effective masses paralell to the Z axis
-    mhh_p = 1. / (g1 - 2 * g2)
-    mlh_p = 1. / (g1 + 2 * g2)
+    mhh_p = 1.0 / (g1 - 2 * g2)
+    mlh_p = 1.0 / (g1 + 2 * g2)
 
     # Effective masses transverse to the Z axis, that is, in the plane of the strain
-    mhh_t = 1. / (g1 + g2)
-    mlh_t = 1. / (g1 - g2)
+    mhh_t = 1.0 / (g1 + g2)
+    mlh_t = 1.0 / (g1 - g2)
 
     return Ec, Evhh, Evlh, me * m0, mhh_p * m0, mlh_p * m0, mhh_t * m0, mlh_t * m0
 
@@ -79,34 +81,56 @@ def kp6x6(mat, host_material):
 
     # Strain parameters
     exx = (host_material.lattice_constant - a0) / a0
-    ezz = - 2 * mat.c12 / mat.c11 * exx
+    ezz = -2 * mat.c12 / mat.c11 * exx
 
     Oe = ac * (exx + exx + ezz)
     Pe = -av * (exx + exx + ezz)
     Qe = -b / 2 * (exx + exx - 2 * ezz)
 
     x = Qe / Delta
-    if x == 0: x = 1e-10
+    if x == 0:
+        x = 1e-10
     com = lambda s: x - 1 + s * np.sqrt(1 + 2 * x + 9 * x ** 2)
     f = lambda s: (2 * x * (1 + 1.5 * com(s)) + 6 * x ** 2) / (
-        0.75 * com(s) ** 2 + com(s) - 3 * x ** 2)  # s=+1 for LH and s=-1 for SO
+        0.75 * com(s) ** 2 + com(s) - 3 * x ** 2
+    )  # s=+1 for LH and s=-1 for SO
 
     Ec = Ec0 + Oe
     Evhh = Ev0 - Pe - Qe
-    Evlh = Ev0 - Pe + 0.5 * (Qe - Delta + np.sqrt(Delta ** 2 + 2 * Delta * Qe + 9 * Qe ** 2))
-    Evso = Ev0 - Pe + 0.5 * (Qe - Delta - np.sqrt(Delta ** 2 + 2 * Delta * Qe + 9 * Qe ** 2))
+    Evlh = (
+        Ev0
+        - Pe
+        + 0.5 * (Qe - Delta + np.sqrt(Delta ** 2 + 2 * Delta * Qe + 9 * Qe ** 2))
+    )
+    Evso = (
+        Ev0
+        - Pe
+        + 0.5 * (Qe - Delta - np.sqrt(Delta ** 2 + 2 * Delta * Qe + 9 * Qe ** 2))
+    )
 
     # Effective masses paralell to the Z axis
-    mhh_p = 1. / (g1 - 2 * g2)
-    mlh_p = 1. / (g1 + 2 * f(+1) * g2)
-    mso_p = 1. / (g1 + 2 * f(-1) * g2)
+    mhh_p = 1.0 / (g1 - 2 * g2)
+    mlh_p = 1.0 / (g1 + 2 * f(+1) * g2)
+    mso_p = 1.0 / (g1 + 2 * f(-1) * g2)
 
     # Effective masses transverse to the Z axis, that is, in the plane of the strain
-    mhh_t = 1. / (g1 + g2)
-    mlh_t = 1. / (g1 - f(+1) * g2)
-    mso_t = 1. / (g1 - f(-1) * g2)
+    mhh_t = 1.0 / (g1 + g2)
+    mlh_t = 1.0 / (g1 - f(+1) * g2)
+    mso_t = 1.0 / (g1 - f(-1) * g2)
 
-    return Ec, Evhh, Evlh, Evso, me * m0, mhh_p * m0, mlh_p * m0, mso_p * m0, mhh_t * m0, mlh_t * m0, mso_t * m0
+    return (
+        Ec,
+        Evhh,
+        Evlh,
+        Evso,
+        me * m0,
+        mhh_p * m0,
+        mlh_p * m0,
+        mso_p * m0,
+        mhh_t * m0,
+        mlh_t * m0,
+        mso_t * m0,
+    )
 
 
 def fill_hamiltonian_holes_4x4(A1, A2, B1, B2, C, D, delta, block):
@@ -118,15 +142,15 @@ def fill_hamiltonian_holes_4x4(A1, A2, B1, B2, C, D, delta, block):
     l13 = lambda i: D[i] / (2 * delta)
     d14 = lambda i: 2 * A2[i] / delta ** 2 + A1[i]
     u13 = lambda i: C[i] - (D[i + 1] - D[i - 1]) / (4 * delta)
-    uu14 = lambda i: - (A2[i + 1] + 4 * A2[i] - A2[i - 1]) / (4 * delta ** 2)
-    uuu13 = lambda i: - D[i] / (2 * delta)
+    uu14 = lambda i: -(A2[i + 1] + 4 * A2[i] - A2[i - 1]) / (4 * delta ** 2)
+    uuu13 = lambda i: -D[i] / (2 * delta)
 
-    lll24 = lambda i: - D[i] / (2 * delta)
+    lll24 = lambda i: -D[i] / (2 * delta)
     ll23 = lambda i: (B2[i + 1] - 4 * B2[i] - B2[i - 1]) / (4 * delta ** 2)
     l24 = lambda i: C[i] + (D[i + 1] - D[i - 1]) / (4 * delta)
     d23 = lambda i: 2 * B2[i] / delta ** 2 + B1[i]
     u24 = lambda i: D[i] / (2 * delta)
-    uu23 = lambda i: - (B2[i + 1] + 4 * B2[i] - B2[i - 1]) / (4 * delta ** 2)
+    uu23 = lambda i: -(B2[i + 1] + 4 * B2[i] - B2[i - 1]) / (4 * delta ** 2)
 
     lll = np.zeros(2 * N)
     ll = np.zeros(2 * N)
@@ -142,13 +166,13 @@ def fill_hamiltonian_holes_4x4(A1, A2, B1, B2, C, D, delta, block):
         # We fill the first two equations separatelly
         d[0] = d14(0)
         u[0] = C[0] - (D[1] - D[0]) / (4 * delta)
-        uu[0] = - (A2[1] + 3 * A2[0]) / (4 * delta ** 2)
+        uu[0] = -(A2[1] + 3 * A2[0]) / (4 * delta ** 2)
         uuu[0] = uuu13(0)
 
         l[1] = C[0] + (D[1] - D[0]) / (4 * delta)
         d[1] = d23(0)
         u[1] = u24(0)
-        uu[1] = - (B2[1] + 3 * B2[0]) / (4 * delta ** 2)
+        uu[1] = -(B2[1] + 3 * B2[0]) / (4 * delta ** 2)
 
         for i in range(1, N - 1):
             # The first equation, for g1
@@ -172,13 +196,13 @@ def fill_hamiltonian_holes_4x4(A1, A2, B1, B2, C, D, delta, block):
             uu[k] = uu23(i)
 
         # We fill the last two equations separatelly
-        ll[2 * (N - 1)] = (- 3 * A2[N - 1] - A2[N - 2]) / (4 * delta ** 2)
+        ll[2 * (N - 1)] = (-3 * A2[N - 1] - A2[N - 2]) / (4 * delta ** 2)
         l[2 * (N - 1)] = l13(N - 1)
         d[2 * (N - 1)] = d14(N - 1)
         u[2 * (N - 1)] = C[N - 1] - (D[N - 1] - D[N - 2]) / (4 * delta)
 
         lll[2 * (N - 1) + 1] = lll24(N - 1)
-        ll[2 * (N - 1) + 1] = (- 3 * B2[N - 1] - B2[N - 2]) / (4 * delta ** 2)
+        ll[2 * (N - 1) + 1] = (-3 * B2[N - 1] - B2[N - 2]) / (4 * delta ** 2)
         l[2 * (N - 1) + 1] = C[N - 1] + (D[N - 1] - D[N - 2]) / (4 * delta)
         d[2 * (N - 1) + 1] = d23(N - 1)
 
@@ -188,13 +212,13 @@ def fill_hamiltonian_holes_4x4(A1, A2, B1, B2, C, D, delta, block):
         # We fill the first two equations separatelly
         d[0] = d23(0)
         u[0] = C[0] - (D[1] - D[0]) / (4 * delta)
-        uu[0] = - (B2[1] + 3 * B2[0]) / (4 * delta ** 2)
+        uu[0] = -(B2[1] + 3 * B2[0]) / (4 * delta ** 2)
         uuu[0] = uuu13(0)
 
         l[1] = C[0] + (D[1] - D[0]) / (4 * delta)
         d[1] = d14(0)
         u[1] = u24(0)
-        uu[1] = - (A2[1] + 3 * A2[0]) / (4 * delta ** 2)
+        uu[1] = -(A2[1] + 3 * A2[0]) / (4 * delta ** 2)
 
         for i in range(1, N - 1):
             # The first equation, for g3
@@ -219,13 +243,13 @@ def fill_hamiltonian_holes_4x4(A1, A2, B1, B2, C, D, delta, block):
 
         # We fill the last two equations separatelly
 
-        ll[2 * (N - 1)] = (- 3 * B2[N - 1] - B2[N - 2]) / (4 * delta ** 2)
+        ll[2 * (N - 1)] = (-3 * B2[N - 1] - B2[N - 2]) / (4 * delta ** 2)
         l[2 * (N - 1)] = l13(N - 1)
         d[2 * (N - 1)] = d23(N - 1)
         u[2 * (N - 1)] = C[N - 1] - (D[N - 1] - D[N - 2]) / (4 * delta)
 
         lll[2 * (N - 1) + 1] = lll24(N - 1)
-        ll[2 * (N - 1) + 1] = (- 3 * A2[N - 1] - A2[N - 2]) / (4 * delta ** 2)
+        ll[2 * (N - 1) + 1] = (-3 * A2[N - 1] - A2[N - 2]) / (4 * delta ** 2)
         l[2 * (N - 1) + 1] = C[N - 1] + (D[N - 1] - D[N - 2]) / (4 * delta)
         d[2 * (N - 1) + 1] = d14(N - 1)
 
@@ -249,7 +273,9 @@ def fill_hamiltonian_holes_4x4(A1, A2, B1, B2, C, D, delta, block):
     return output
 
 
-def solve_holes_QW_at_kt_4x4(kt, z, fhh, flh, g1, g2, g3, num=(10, 10), quasiconfined=0.0, symmetric=False):
+def solve_holes_QW_at_kt_4x4(
+    kt, z, fhh, flh, g1, g2, g3, num=(10, 10), quasiconfined=0.0, symmetric=False
+):
     # Normalization factors
     N = len(z)
     L = max(z)
@@ -272,15 +298,16 @@ def solve_holes_QW_at_kt_4x4(kt, z, fhh, flh, g1, g2, g3, num=(10, 10), quasicon
 
     # Using the shift-invert mode will help to speed up the algorithm by calculating the eigenvalues only inside the QW or very close
     # See explanation: https://docs.scipy.org/doc/scipy-0.15.1/reference/tutorial/arpack.html
-    sigma = min(np.amin(fhh), np.amin(
-        flh))  # The bottom of the potential (valence band edge) is the target energy for the eigenvalues
+    sigma = min(
+        np.amin(fhh), np.amin(flh)
+    )  # The bottom of the potential (valence band edge) is the target energy for the eigenvalues
 
     # Allow for quasiconfined levels to go through. They can be discarded later with the filter, if necessary
     potmax = max(np.amax(fhh), np.amax(flh)) + quasiconfined * q / E0
 
     # Solutions for upper hamiltonian
     H_U = fill_hamiltonian_holes_4x4(A1, A2, B1, B2, C, D, delta, "U")
-    E_U, Psi_U = eigs(H_U, k=num[0], which='LR', sigma=sigma)
+    E_U, Psi_U = eigs(H_U, k=num[0], which="LR", sigma=sigma)
 
     Psi_g1 = Psi_U[range(0, len(Psi_U), 2)]
     Psi_g2 = Psi_U[range(1, len(Psi_U), 2)]
@@ -314,7 +341,7 @@ def solve_holes_QW_at_kt_4x4(kt, z, fhh, flh, g1, g2, g3, num=(10, 10), quasicon
     # If the structure is not symmetric, we have to solve the lower hamiltonian, too
     if not symmetric:
         H_L = fill_hamiltonian_holes_4x4(A1, A2, B1, B2, C, D, delta, "L")
-        E_L, Psi_L = eigs(H_L, k=num[0], which='LR', sigma=sigma)
+        E_L, Psi_L = eigs(H_L, k=num[0], which="LR", sigma=sigma)
 
         Psi_g3 = Psi_L[range(0, len(Psi_L), 2)]
         Psi_g4 = Psi_L[range(1, len(Psi_L), 2)]
@@ -342,27 +369,33 @@ def solve_holes_QW_at_kt_4x4(kt, z, fhh, flh, g1, g2, g3, num=(10, 10), quasicon
 
         E_L = offset - E_L * E0
 
-        return {"E_U": E_U,
-                "E_L": E_L,
-                "Psi_g1": Psi_g1,
-                "Psi_g2": Psi_g2,
-                "Psi_g3": Psi_g3,
-                "Psi_g4": Psi_g4}
+        return {
+            "E_U": E_U,
+            "E_L": E_L,
+            "Psi_g1": Psi_g1,
+            "Psi_g2": Psi_g2,
+            "Psi_g3": Psi_g3,
+            "Psi_g4": Psi_g4,
+        }
 
     else:
         # If the structure is symmetric, we simply duplicate the energies and reverse the wavefunctions
-        return {"E_U": E_U,
-                "Psi_g1": Psi_g1,
-                "Psi_g2": Psi_g2}
+        return {"E_U": E_U, "Psi_g1": Psi_g1, "Psi_g2": Psi_g2}
 
 
 def fill_hamiltonian_holes_6x6(A1, A2, B1, B2, C, D, delta, block):
-    print('Fully coupled 6x6 kp solver not implemented yet. Only the band edges can be calculated. ')
+    print(
+        "Fully coupled 6x6 kp solver not implemented yet. Only the band edges can be calculated. "
+    )
     sys.exit(-1)
 
 
-def solve_holes_QW_at_kt_6x6(kt, z, fhh, flh, g1, g2, g3, num=(10, 10), quasiconfined=0.0, symmetric=False):
-    print('Fully coupled 6x6 kp solver not implemented yet. Only the band edges can be calculated. ')
+def solve_holes_QW_at_kt_6x6(
+    kt, z, fhh, flh, g1, g2, g3, num=(10, 10), quasiconfined=0.0, symmetric=False
+):
+    print(
+        "Fully coupled 6x6 kp solver not implemented yet. Only the band edges can be calculated. "
+    )
     sys.exit(-1)
 
 
@@ -404,8 +437,9 @@ def solve_electrons_QW_at_kt_parabolic(kt, z, fe, me, num=(10, 10), quasiconfine
     m_c = m[2:]  # m_(j+1)
 
     # These are the interior diagonals of equation 18 in the above ref.
-    axis = 0.25 / dz ** 2 * (
-    1 / m_a + 2 / m_b + 1 / m_c) + fe + 0.5 * kt ** 2 / m_b  # d_j from Frensley, W. R. (1991), modified to include kt and normalised variables
+    axis = (
+        0.25 / dz ** 2 * (1 / m_a + 2 / m_b + 1 / m_c) + fe + 0.5 * kt ** 2 / m_b
+    )  # d_j from Frensley, W. R. (1991), modified to include kt and normalised variables
     upper = 0.25 / dz ** 2 * (1 / m_a + 1 / m_b)  # s_(j+1)
     lower = 0.25 / dz ** 2 * (1 / m_b + 1 / m_c)  # s_j
 
@@ -414,10 +448,12 @@ def solve_electrons_QW_at_kt_parabolic(kt, z, fe, me, num=(10, 10), quasiconfine
 
     H = dia_matrix((diagonals, index), shape=(N, N))
 
-    sigma = 0.0  # The bottom of the potential (conduction band) is the target energy for the eigenvalues
+    sigma = (
+        0.0
+    )  # The bottom of the potential (conduction band) is the target energy for the eigenvalues
 
     # The heavy numerical calculation
-    E, Psi = eigs(H, k=num[0], which='LR', sigma=sigma)
+    E, Psi = eigs(H, k=num[0], which="LR", sigma=sigma)
 
     # Allow for quasi confined levels to go through.
     potmax = max(fe) + quasiconfined * q / E0
@@ -432,9 +468,7 @@ def solve_electrons_QW_at_kt_parabolic(kt, z, fe, me, num=(10, 10), quasiconfine
     E = E * E0 + offset
 
     # The solutions are degenerate: same energy
-    return {"E_e": E,
-            "Psi_e": Psi,
-            "z": z}
+    return {"E_e": E, "Psi_e": Psi, "z": z}
 
 
 def band_sorting(bands, symmetric=False):
@@ -545,18 +579,27 @@ def band_sorting(bands, symmetric=False):
     psi_hh = np.array(psi_hh)
     psi_lh = np.array(psi_lh)
 
-    return {"kt": kt,           # k points
-            "Ee": Ee,           # Electron energy levels vs K
-            "psi_e": psi_e,     # Electron wavefunctions vs X and K
-            "Ehh": Ehh,         # Heavy hole energy levels vs K
-            "psi_hh": psi_hh,   # Heavy hole wavefunctions vs X and K
-            "Elh": Elh,         # Light hole energy levels vs K
-            "psi_lh": psi_lh,   # Light hole wavefunctions vs X and K
-            "symmetric": symmetric}  # If the structure is symmetric
+    return {
+        "kt": kt,  # k points
+        "Ee": Ee,  # Electron energy levels vs K
+        "psi_e": psi_e,  # Electron wavefunctions vs X and K
+        "Ehh": Ehh,  # Heavy hole energy levels vs K
+        "psi_hh": psi_hh,  # Heavy hole wavefunctions vs X and K
+        "Elh": Elh,  # Light hole energy levels vs K
+        "psi_lh": psi_lh,  # Light hole wavefunctions vs X and K
+        "symmetric": symmetric,
+    }  # If the structure is symmetric
 
 
-def solve_bandstructure_QW(structure, num=10, kpoints=40, krange=5e9, quasiconfined=0.0, symmetric=False,
-                           plot_bands=False):
+def solve_bandstructure_QW(
+    structure,
+    num=10,
+    kpoints=40,
+    krange=5e9,
+    quasiconfined=0.0,
+    symmetric=False,
+    plot_bands=False,
+):
     allk_t = np.linspace(0, krange, kpoints)
     bands = []
 
@@ -570,19 +613,47 @@ def solve_bandstructure_QW(structure, num=10, kpoints=40, krange=5e9, quasiconfi
     g3 = structure["g3"]
 
     # First we solve at kt = 0
-    new_kpoint = solve_electrons_QW_at_kt_parabolic(0.0, z, fe, me, num=(num, num), quasiconfined=quasiconfined)
-    new_kpoint.update(solve_holes_QW_at_kt_4x4(0.0, z, fhh, flh, g1, g2, g3, num=(num, num), symmetric=symmetric,
-                                               quasiconfined=quasiconfined))
+    new_kpoint = solve_electrons_QW_at_kt_parabolic(
+        0.0, z, fe, me, num=(num, num), quasiconfined=quasiconfined
+    )
+    new_kpoint.update(
+        solve_holes_QW_at_kt_4x4(
+            0.0,
+            z,
+            fhh,
+            flh,
+            g1,
+            g2,
+            g3,
+            num=(num, num),
+            symmetric=symmetric,
+            quasiconfined=quasiconfined,
+        )
+    )
     bands.append([0.0, new_kpoint])
 
     # We search only for the solutions corresponding to energy levels confined at k=0
-    num_e = len(new_kpoint['E_e'])
-    num_h = len(new_kpoint['E_U'])
+    num_e = len(new_kpoint["E_e"])
+    num_h = len(new_kpoint["E_U"])
 
     for kt in allk_t[1:]:
-        new_kpoint = solve_electrons_QW_at_kt_parabolic(kt, z, fe, me, num=(num, num_e), quasiconfined=-0.1)
-        new_kpoint.update(solve_holes_QW_at_kt_4x4(kt, z, fhh, flh, g1, g2, g3, num=(num, num_h), symmetric=symmetric,
-                                                   quasiconfined=0.1))
+        new_kpoint = solve_electrons_QW_at_kt_parabolic(
+            kt, z, fe, me, num=(num, num_e), quasiconfined=-0.1
+        )
+        new_kpoint.update(
+            solve_holes_QW_at_kt_4x4(
+                kt,
+                z,
+                fhh,
+                flh,
+                g1,
+                g2,
+                g3,
+                num=(num, num_h),
+                symmetric=symmetric,
+                quasiconfined=0.1,
+            )
+        )
 
         bands.append([kt, new_kpoint])
 
@@ -596,24 +667,24 @@ def solve_bandstructure_QW(structure, num=10, kpoints=40, krange=5e9, quasiconfi
         fig, (ax1, ax2) = plt.subplots(2, 1)
 
         # Electrons
-        ax1.plot(bands["kt"]*1e-9, bands["Ee"][0] / q, 'b', label='Ee')
+        ax1.plot(bands["kt"] * 1e-9, bands["Ee"][0] / q, "b", label="Ee")
         for i in range(1, len(bands["Ee"])):
-            ax1.plot(bands["kt"]*1e-9, bands["Ee"][i] / q, 'b')
+            ax1.plot(bands["kt"] * 1e-9, bands["Ee"][i] / q, "b")
 
         # HH
-        ax2.plot(bands["kt"]*1e-9, bands["Ehh"][0] / q, 'r', label='Ehh')
+        ax2.plot(bands["kt"] * 1e-9, bands["Ehh"][0] / q, "r", label="Ehh")
         for i in range(1, len(bands["Ehh"])):
-            ax2.plot(bands["kt"]*1e-9, bands["Ehh"][i] / q, 'r')
+            ax2.plot(bands["kt"] * 1e-9, bands["Ehh"][i] / q, "r")
 
         # LH
-        ax2.plot(bands["kt"]*1e-9, bands["Elh"][0] / q, 'g', label='Elh')
+        ax2.plot(bands["kt"] * 1e-9, bands["Elh"][0] / q, "g", label="Elh")
         for i in range(1, len(bands["Elh"])):
-            ax2.plot(bands["kt"]*1e-9, bands["Elh"][i] / q, 'g')
+            ax2.plot(bands["kt"] * 1e-9, bands["Elh"][i] / q, "g")
 
-        ax1.set_ylabel('Energy (eV)')
-        ax2.set_ylabel('Energy (eV)')
-        plt.xlabel('k (nm$^{-1}$)')
-        plt.xlim(0, max(bands["kt"]*1e-9))
+        ax1.set_ylabel("Energy (eV)")
+        ax2.set_ylabel("Energy (eV)")
+        plt.xlabel("k (nm$^{-1}$)")
+        plt.xlim(0, max(bands["kt"] * 1e-9))
         plt.setp(ax1.get_xticklabels(), visible=False)
         plt.legend()
         plt.tight_layout()

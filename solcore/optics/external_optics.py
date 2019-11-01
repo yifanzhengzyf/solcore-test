@@ -19,7 +19,7 @@ def solve_external_optics(solar_cell, options):
     solar_cell.wavelength = options.wavelength
 
     # We include the shadowing losses
-    initial = (1 - solar_cell.shading) if hasattr(solar_cell, 'shading') else 1
+    initial = (1 - solar_cell.shading) if hasattr(solar_cell, "shading") else 1
 
     # We try to get the external attributes
     try:
@@ -38,7 +38,9 @@ def solve_external_optics(solar_cell, options):
         solar_cell[j].diff_absorption = diff_absorption
         solar_cell[j].absorbed = types.MethodType(absorbed, solar_cell[j])
 
-    solar_cell.transmitted = (1 - solar_cell.external_reflected - all_absorbed) * initial
+    solar_cell.transmitted = (
+        1 - solar_cell.external_reflected - all_absorbed
+    ) * initial
     solar_cell.absorbed = all_absorbed * initial
 
 

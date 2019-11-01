@@ -19,11 +19,14 @@ class Structure(list):
 
     def append_multiple(self, layers, layer_labels=None, repeats=1):
 
-        assert type(layers) == type([]), "`append_multiple` only accepts lists for the first argument."
+        assert type(layers) == type(
+            []
+        ), "`append_multiple` only accepts lists for the first argument."
 
         if layer_labels is not None:
             assert len(layers) == len(
-                layer_labels), "When using `layer_labels` keyword a label must be specified for each layer added i.e. layers and layer_labels must have the same number of elements.  Either fix this or simply do not assign any labels (i.e. layer_labels=None)."
+                layer_labels
+            ), "When using `layer_labels` keyword a label must be specified for each layer added i.e. layers and layer_labels must have the same number of elements.  Either fix this or simply do not assign any labels (i.e. layer_labels=None)."
 
         for i in range(repeats):
             # Extend the structure by appending layers
@@ -38,12 +41,16 @@ class Structure(list):
 
     def __str__(self):
 
-        layer_info = ["  {} {}".format(
-            layer,
-            self.labels[i] if self.labels[i] is not None else "",
-        ) for i, (layer, label) in enumerate(zip(self, self.labels))]
+        layer_info = [
+            "  {} {}".format(
+                layer, self.labels[i] if self.labels[i] is not None else ""
+            )
+            for i, (layer, label) in enumerate(zip(self, self.labels))
+        ]
 
-        return "<Structure object\n{}\n{}>".format(str(self.__dict__), "\n".join(layer_info))
+        return "<Structure object\n{}\n{}>".format(
+            str(self.__dict__), "\n".join(layer_info)
+        )
 
     def width(self):
         return sum([layer.width for layer in self])
@@ -85,9 +92,7 @@ class Layer:
         """
         widthstring = "{:.3}nm".format(self.width * 1e9)
         return "<{}layer {} {}>".format(
-            self.role + " " if self.role != None else "",
-            widthstring,
-            self.material,
+            self.role + " " if self.role != None else "", widthstring, self.material
         )
 
 
@@ -101,17 +106,20 @@ class Junction(list):
 
     def __str__(self):
         layer_info = ["{}".format(layer) for layer in self]
-        return "<Junction object \n\t{}\n\t{}>".format(str(self.__dict__), "\n\t".join(layer_info))
+        return "<Junction object \n\t{}\n\t{}>".format(
+            str(self.__dict__), "\n\t".join(layer_info)
+        )
 
 
 class TunnelJunction(Junction):
     """ Class that contains the minimum definitions for a tunnel junction, ie. a series resistance in our case.
     """
+
     def __init__(self, *args, **kwargs):
         Junction.__init__(self, *args, **kwargs)
 
-        self.R = kwargs['R'] if 'R' in kwargs.keys() else 1e-16
-        self.pn = kwargs['pn'] if 'pn' in kwargs.keys() else True
+        self.R = kwargs["R"] if "R" in kwargs.keys() else 1e-16
+        self.pn = kwargs["pn"] if "pn" in kwargs.keys() else True
 
 
 # CONVERSION UTILITIES
@@ -123,11 +131,13 @@ def InLineComposition(layer):
     :param layer: A layer as defined in the Device structures of the PDD solver
     :return: A mterial string
     """
-    comp = layer['properties']['composition']
-    if 'element' in comp.keys():
-        return comp['material'].replace(comp['element'], comp['element'] + str(comp['fraction']))
+    comp = layer["properties"]["composition"]
+    if "element" in comp.keys():
+        return comp["material"].replace(
+            comp["element"], comp["element"] + str(comp["fraction"])
+        )
     else:
-        return comp['material']
+        return comp["material"]
 
 
 def SolcoreMaterialToStr(material_input):
@@ -136,15 +146,15 @@ def SolcoreMaterialToStr(material_input):
     :param material_input: A solcore material
     :return: A dictionary with the name, consituents and composition of the material
     """
-    material_string = material_input.__str__().strip('<>').split(" ")
+    material_string = material_input.__str__().strip("<>").split(" ")
     material_name = material_string[0].strip("'")
-    composition = {'material': material_name}
+    composition = {"material": material_name}
     if len(material_name) > 4:
         material_composition = material_string[2].split("=")
         for i, comp in enumerate(material_composition):
             if comp in material_name:
-                composition['element'] = material_composition[i]
-                composition['fraction'] = float(material_composition[i + 1])
+                composition["element"] = material_composition[i]
+                composition["fraction"] = float(material_composition[i + 1])
 
     return composition
 
@@ -159,17 +169,22 @@ def ToSolcoreMaterial(comp, T, execute=False, **kwargs):
     :return: A Solcore material or a string with the command to calculate the solcore material
     """
     # It provides a solcore material out of its string composition. The output can be a string with the comand or a solcore material itself.
-    if 'element' in comp.keys():
+    if "element" in comp.keys():
         # A ternary material
-        out = 'solcore.material("%s")(T=%s, %s=%s' % (comp['material'], T, comp['element'], comp['fraction'])
+        out = 'solcore.material("%s")(T=%s, %s=%s' % (
+            comp["material"],
+            T,
+            comp["element"],
+            comp["fraction"],
+        )
     else:
         # A binary material
-        out = 'solcore.material("%s")(T=%s' % (comp['material'], T)
+        out = 'solcore.material("%s")(T=%s' % (comp["material"], T)
 
     for key in kwargs.keys():
-        out = out + ', {}={}'.format(key, kwargs[key])
+        out = out + ", {}={}".format(key, kwargs[key])
 
-    out = out + ') '
+    out = out + ") "
 
     if execute:
         return eval(out)
@@ -200,13 +215,19 @@ def ToStructure(device):
     LayersList = []
     MatList = []
 
-    for i in range(device['numlayers']):
-        layer = device['layers'][i]
-        MatList.append(ToSolcoreMaterial(layer['properties']['composition'], device['T']))
-        LayersList.append(ToLayer(layer['properties']['width'], MatList[i], layer['label']))
-        LayersList[-1].material.strained = 'True'
+    for i in range(device["numlayers"]):
+        layer = device["layers"][i]
+        MatList.append(
+            ToSolcoreMaterial(layer["properties"]["composition"], device["T"])
+        )
+        LayersList.append(
+            ToLayer(layer["properties"]["width"], MatList[i], layer["label"])
+        )
+        LayersList[-1].material.strained = "True"
 
     LayersList = Structure(LayersList)
-    LayersList.substrate = ToSolcoreMaterial(device['substrate'], device['T'], execute=True)
+    LayersList.substrate = ToSolcoreMaterial(
+        device["substrate"], device["T"], execute=True
+    )
 
     return LayersList

@@ -19,4 +19,6 @@ def open_with_os(path):
     elif sys == "Linux":
         os.system('evince "%s"' % path)
     else:
-        raise NotImplementedError("Unable to open files in this particular system: %s" % sys)
+        raise NotImplementedError(
+            "Unable to open files in this particular system: %s" % sys
+        )

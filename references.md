@@ -30,11 +30,11 @@
 	*Short purpose:* spectral2 irradiance model  
 	*Reference:* http://rredc.nrel.gov/solar/models/spectral/SPCTRAL2/  
 
-9. [solcore/material_data/AlInP-Material/__init__.py](solcore/material_data/AlInP-Material/__init__.py) - Line=7  
+9. [solcore/material_data/AlInP-Material/\_\_init\_\_.py](solcore/material_data/AlInP-Material/__init__.py) - Line=7  
 	*Short purpose:* AlInP refractive index  
 	*Reference:* E. Ochoa-Martínez, L. Barrutia, M. Ochoa, E. Barrigón, I. García, I. Rey-Stolle, C. Algora, P. Basa, G. Kronome, and M. Gabás, “Refractive indexes and extinction coefficients of n- and p-type doped GaInP, AlInP and AlGaInP for multijunction solar cells,” Solar Energy Materials and Solar Cells, vol. 174, pp. 388–396, Jan. 2018.  
 
-10. [solcore/material_data/AlInP-Material/__init__.py](solcore/material_data/AlInP-Material/__init__.py) - Line=11  
+10. [solcore/material_data/AlInP-Material/\_\_init\_\_.py](solcore/material_data/AlInP-Material/__init__.py) - Line=11  
 	*Short purpose:* AlP refractive index. Cut to bandgap.  
 	*Reference:* V. Emberger, F. Hatami, W. Ted Masselink, and S. Peters, “AlP/GaP distributed Bragg reflectors,” Appl. Phys. Lett., vol. 103, no. 3, pp. 031101–4, Jul. 2013.  
 

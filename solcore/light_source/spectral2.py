@@ -2,7 +2,7 @@ import numpy
 from numpy import *
 from datetime import datetime
 from solcore import spectral_conversion_nm_ev
-from solcore.science_tracker import science_reference
+from r2t2 import science_reference
 import os
 
 this_dir = os.path.split(__file__)[0]

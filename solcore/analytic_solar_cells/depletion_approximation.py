@@ -3,7 +3,7 @@ from scipy.interpolate import interp1d
 from scipy.integrate import solve_bvp
 
 from solcore.constants import kb, q
-from solcore.science_tracker import science_reference
+from r2t2 import science_reference
 from solcore.state import State
 
 

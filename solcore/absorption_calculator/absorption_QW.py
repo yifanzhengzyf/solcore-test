@@ -1,7 +1,7 @@
 from solcore.constants import *
 from numpy import array
 import numpy as np
-from solcore.science_tracker import science_reference
+from r2t2 import science_reference
 
 H = lambda x: 0 if x < 0 else 1  ### blindly changed this !!
 D = lambda x, width: 1 if (x >= -width) and (x <= width) else 0  # Delta function

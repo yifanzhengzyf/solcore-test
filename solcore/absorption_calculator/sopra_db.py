@@ -7,7 +7,7 @@ import os, sys
 import re
 from natsort import natsorted
 from configparser import ConfigParser
-from solcore.science_tracker import science_reference
+from r2t2 import science_reference
 from solcore import config, SOLCORE_ROOT
 
 SOPRA_PATH = os.path.abspath(

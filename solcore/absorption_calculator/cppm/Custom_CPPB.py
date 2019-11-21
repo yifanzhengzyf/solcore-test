@@ -3,7 +3,7 @@
 import numpy as np
 import os, sys
 import re
-from solcore.science_tracker import science_reference
+from r2t2 import science_reference
 import solcore.constants as const
 
 

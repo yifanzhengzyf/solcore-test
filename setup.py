@@ -72,6 +72,7 @@ install_requires = [
     "regex",
     "cycler",
     "pyyaml",
+    "R2T2",
 ]
 tests_require = ["pytest", "pytest-cov", "pytest-mock"]
 extras_require = {"dev": tests_require + ["Sphinx", "pre-commit", "r2t2"]}

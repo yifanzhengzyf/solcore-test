@@ -1,4 +1,4 @@
-import solcore.science_tracker as st
+import r2t2 as st
 
 st.science_reference(
     "GaP and InP refractive index",

@@ -10,7 +10,7 @@ from solcore.quantum_mechanics import schrodinger
 from solcore.quantum_mechanics.kp_bulk import kp8x8_bulk
 from solcore.quantum_mechanics.strain import strain_calculation_parameters
 from solcore.absorption_calculator import adachi_alpha
-from solcore.science_tracker import science_reference
+from r2t2 import science_reference
 
 q = constants.q
 pi = constants.pi

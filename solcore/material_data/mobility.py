@@ -11,7 +11,7 @@ J. Appl. Phys., vol. 87, no. 6, p. 2890, 2000.
 import json
 import numpy as np
 import os
-from solcore.science_tracker import science_reference
+from r2t2 import science_reference
 
 # Constants
 kb = 8.6173324e-5  # eV K-1

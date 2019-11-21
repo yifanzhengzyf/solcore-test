@@ -2,7 +2,7 @@ import numpy as np
 from solcore.interpolate import interp1d
 from solcore.structure import Junction, Layer
 from solcore.constants import kb, q, hbar, electron_mass, vacuum_permittivity, pi
-from solcore.science_tracker import science_reference
+from r2t2 import science_reference
 from solcore import eVnm, siUnits, convert
 
 fs = 6.8e-5

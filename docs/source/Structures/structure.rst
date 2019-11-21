@@ -37,7 +37,7 @@ Science tracker
 
 Solcore is an original work, but the equations it implements and the data it uses have been often published elsewere. The Science tracker allows you to keep track of those references and check yourself their origin and assumpions.
 
-.. automodule:: solcore.science_tracker
+.. automodule:: r2t2
     :members:
     :undoc-members:
 

@@ -1,7 +1,7 @@
 import numpy as np
 from solcore import get_parameter
 from solcore.constants import hbar, pi, c
-from solcore.science_tracker import science_reference
+from r2t2 import science_reference
 
 
 def create_adachi_alpha(material, Esteps=(1.42, 6, 3000), T=300, wl=None):

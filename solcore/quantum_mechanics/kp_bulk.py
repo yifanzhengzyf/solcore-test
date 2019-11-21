@@ -6,7 +6,7 @@ import solcore
 from solcore.graphing import *
 from solcore import constants
 from solcore.crystals import traverse_brillouin, brillouin_critical_points, kvector
-from solcore.science_tracker import science_reference
+from r2t2 import science_reference
 
 electron_charge = constants.q
 hbar = constants.hbar

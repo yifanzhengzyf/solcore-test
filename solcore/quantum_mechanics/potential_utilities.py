@@ -1,7 +1,7 @@
 from numpy import ones, array, sqrt, trapz
 from scipy.sparse import dia_matrix
 from scipy.sparse.linalg import eigs
-from solcore.science_tracker import science_reference
+from r2t2 import science_reference
 from solcore.constants import *
 import numpy as np
 

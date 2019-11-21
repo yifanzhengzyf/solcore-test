@@ -4,7 +4,7 @@ import numpy as np
 from typing import Callable, Optional
 from functools import wraps
 
-from solcore.science_tracker import science_reference
+from r2t2 import science_reference
 from solcore import (
     spectral_conversion_nm_ev,
     spectral_conversion_nm_hz,

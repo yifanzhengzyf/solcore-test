@@ -2,7 +2,7 @@ from scipy.optimize import bisect
 from numpy import sqrt, log, pi, linspace, array, ones
 from solcore import convert, asUnit
 from solcore import ParameterSystem
-from solcore.science_tracker import science_reference
+from r2t2 import science_reference
 
 
 # Zero stress criterion from:
